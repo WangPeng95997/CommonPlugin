@@ -1,17 +1,14 @@
 ﻿using Smod2;
 using Smod2.Attributes;
-using System;
-using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 
 namespace CommonPlugin
 {
 	[PluginDetails(
-		author = "Lunaird",
+		author = "l4kkS41",
 		name = "萌新天堂服务器",
-		description = "萌新天堂服务器核心插件",
-		id = "Lunaird.Common",
+		description = "萌新天堂服务器核心插件 V2.0",
+		id = "l4kkS41.CommonPlugin",
 		configPrefix = "CM",
 		langFile = "CommonPlugin",
 		version = "A",
@@ -26,7 +23,7 @@ namespace CommonPlugin
 
 		public override void OnEnable()
 		{
-			Harmony = new Harmony($"Lunaird.HarmonyPatch");
+			Harmony = new Harmony($"l4kkS41.HarmonyPatch");
 			Harmony.PatchAll();
 			this.Info(Details.name + " Has Loaded Successfully!");
 		}

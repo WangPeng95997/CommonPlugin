@@ -79,6 +79,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="MethodExtensions.cs" />
     <Compile Include="Extensions\ReferenceHubExtensions.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
@@ -103,7 +104,7 @@
     <Compile Include="Patches\Scp939PlayerScriptPatch.cs" />
     <Compile Include="Patches\SinkholeEnvironmentalHazardPatch.cs" />
     <Compile Include="MapManager.cs" />
-    <Compile Include="CustomType.cs" />
+    <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -5,8 +5,6 @@ using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
-
-
     [HarmonyPatch(typeof(Scp096), "MaxShield", MethodType.Getter)]
     internal static class MaxShieldPatch
     {

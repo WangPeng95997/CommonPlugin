@@ -35,7 +35,7 @@
 		RandomScpCount
 	}
 
-	public enum Scp079Level
+	public enum Scp079LevelType
 	{
 		Level_1,
 		Level_2,
