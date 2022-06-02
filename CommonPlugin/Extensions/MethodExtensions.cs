@@ -1,5 +1,12 @@
-﻿using UnityEngine;
-using Hints;
+﻿using Hints;
+using InventorySystem;
+using InventorySystem.Items;
+using InventorySystem.Items.Firearms;
+using InventorySystem.Items.Firearms.Ammo;
+using InventorySystem.Items.Pickups;
+using MEC;
+using Mirror;
+using UnityEngine;
 
 namespace CommonPlugin.Extensions
 {
@@ -101,14 +108,60 @@ namespace CommonPlugin.Extensions
 			}
 		}
 
+		public static ItemPickupBase SpawnItem(ItemType itemType, Vector3 position, Quaternion ratation, int ammo)
+        {
+			Inventory component = GameObject.Find("Host").GetComponent<Inventory>();
+
+			ItemBase original;
+			InventoryItemLoader.AvailableItems.TryGetValue(itemType, out original);
+
+			ItemBase itemBase = Object.Instantiate(original, component.transform);
+			PickupSyncInfo pickupSyncInfo = new PickupSyncInfo
+			{
+				ItemId = itemType,
+				Serial = ItemSerialGenerator.GenerateNext(),
+				Weight = itemBase.Weight,
+				Position = position,
+				Rotation = new LowPrecisionQuaternion(ratation)
+			};
+			ItemPickupBase itemPickupBase = component.ServerCreatePickup(itemBase, pickupSyncInfo);
+
+			switch (itemType)
+            {
+				// WeaponType
+				case ItemType.GunCOM15:
+				case ItemType.MicroHID:
+				case ItemType.GunE11SR:
+				case ItemType.GunCrossvec:
+				case ItemType.GunFSP9:
+				case ItemType.GunLogicer:
+				case ItemType.GunCOM18:
+				case ItemType.GunRevolver:
+				case ItemType.GunAK:
+				case ItemType.GunShotgun:
+				case ItemType.ParticleDisruptor:
+					(itemPickupBase as FirearmPickup).NetworkStatus = new FirearmStatus((byte)ammo, FirearmStatusFlags.None, 0);
+					break;
+
+				// AmmoType
+				case ItemType.Ammo12gauge:
+				case ItemType.Ammo556x45:
+				case ItemType.Ammo44cal:
+				case ItemType.Ammo762x39:
+				case ItemType.Ammo9x19:
+					(itemPickupBase as AmmoPickup).NetworkSavedAmmo = (ushort)ammo;
+					break;
+            }
+
+			return itemPickupBase;
+		}
+
 		public static void FlickerLights(float duration, int random = 5)
 		{
 			foreach (FlickerableLightController fc in Object.FindObjectsOfType<FlickerableLightController>())
 				if (Random.Next(random) == 0)
 					fc.ServerFlickerLights(duration);
 		}
-
-		
 
 		public static void SetScp035(ReferenceHub hub)
 		{

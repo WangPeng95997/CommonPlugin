@@ -17,9 +17,13 @@ namespace CommonPlugin.Patches
     [HarmonyPatch(typeof(Scp096), "ResetShield")]
     internal static class ResetShieldPatch
     {
+        private static float MaxShield = 1000.0f;
+
+        private static float MaxShield2 = 1250.0f;
+
         private static bool Prefix(Scp096 __instance)
         {
-            __instance.Hub.serverRoles.Network_myColor
+            __instance.Hub.characterClassManager.
             __instance.CurMaxShield
 
             return false;

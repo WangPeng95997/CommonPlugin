@@ -80,7 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\PlayerExtensions.cs" />
-    <Compile Include="MethodExtensions.cs" />
+    <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ReferenceHubExtensions.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
     <Compile Include="Patches\FallDamagePatch.cs" />

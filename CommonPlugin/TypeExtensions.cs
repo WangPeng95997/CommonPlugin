@@ -44,12 +44,13 @@
 		Level_5,
 	}
 
-	public enum SpecialScpType
+	public enum CustomScpType
 	{
 		Scp035,
 		Scp181,
 		Scp682,
-		SpecialScpCount
+		Scp703
+		CustomScpCount
 	}
 
 	public enum TrapItemType

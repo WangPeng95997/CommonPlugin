@@ -5,6 +5,7 @@ using System.Reflection;
 
 using CustomPlayerEffects;
 using Hints;
+using InventorySystem;
 using MEC;
 using Mirror;
 using Respawning;
@@ -32,10 +33,10 @@ namespace CommonPlugin
 		public EventHandlers() { }
 
 		static EventHandlers()
-        {
+		{
 			Scp035id = 0;
 
-            Scp049id = 0;
+			Scp049id = 0;
 
 			Scp079id = 0;
 
@@ -197,9 +198,9 @@ namespace CommonPlugin
 		public static bool bScp703Activating = false;
 
 		// SCP-939
-		public readonly int Scp939HP = 3000;
+		public readonly int Scp939MaxHP = 3000;
 
-		public readonly int Scp939MaxHP = 3300;
+		public readonly int Scp939MaxHP2 = 3300;
 
 		private readonly float healScp939_1 = 1.0f;
 
@@ -301,6 +302,8 @@ namespace CommonPlugin
 						break;
 				}
 
+				
+
 				Inventory component = GameObject.Find("Host").GetComponent<Inventory>();
 				Pickup pickup = component.SetPickup(itemType, 0.0f, new Vector3(ev.Position.x, ev.Position.y + 2.5f, ev.Position.z), Quaternion.Euler(Vector3.zero), 0, 0, 0);
 				TrapItem.Add(pickup.gameObject.GetInstanceID());
@@ -334,12 +337,16 @@ namespace CommonPlugin
 			if (Scp035id != 0)
 			{
 				ReferenceHub hub;
+
 				bool bEndRound = true;
-				foreach (GameObject go in PlayerManager.players)
+
+				foreach (GameObject gameObject in PlayerManager.players)
 				{
-					hub = ReferenceHub.GetHub(go);
+					hub = ReferenceHub.GetHub(gameObject);
+
 					if (!bEndRound)
 						break;
+
 					if (hub.playerId == Scp035id)
 						continue;
 
@@ -358,9 +365,9 @@ namespace CommonPlugin
 				}
 
 				if (!bEndRound)
-					ev.Status = ROUND_END_STATUS.ON_GOING;
+					ev.Status = RoundEndStatus.ON_GOING;
 				else
-					ev.Status = ROUND_END_STATUS.NO_VICTORY;
+					ev.Status = RoundEndStatus.NO_VICTORY;
 			}
 		}
 
@@ -369,6 +376,7 @@ namespace CommonPlugin
 			// 测试
 			if (ev.Player.PlayerID == Scp035id)
 				ev.ActivateContainment = false;
+			ev.Player.GetHub().GetHealthStat().
 		}
 
 		public void OnDecontaminate() => bScp703Activating = false;
@@ -834,6 +842,7 @@ namespace CommonPlugin
 			ReferenceHub hub = ev.Player.GetHub();
 			ev.UsingDefaultItem = false;
 			ev.Items.Clear();
+			ev.Player.GetHub().inventory.drop
 
 			switch (hub.characterClassManager.NetworkCurClass)
 			{
@@ -889,7 +898,7 @@ namespace CommonPlugin
 					if (hub.playerId == Scp682id)
 						Timing.RunCoroutine(Timing_OnSetRole(hub, Scp682MaxHP));
 					else
-						Timing.RunCoroutine(Timing_OnSetRole(hub, Scp939HP));
+						Timing.RunCoroutine(Timing_OnSetRole(hub, Scp939MaxHP));
 					break;
 
 				case RoleType.Spectator:
@@ -1167,7 +1176,7 @@ namespace CommonPlugin
 								v3 = transform.position;
 							}
 
-							if (hub.playerStats.maxHP == Scp939MaxHP)
+							if (hub.playerStats.maxHP == Scp939MaxHP2)
 							{
 								if (hub.playerStats.Health + healScp939_1 < hub.playerStats.maxHP)
 									hub.playerStats.Health += healScp939_1;
@@ -1900,9 +1909,9 @@ namespace CommonPlugin
 								case RoleType.Scp93953:
 									if (hub.playerId == Scp682id)
 										hub.hints.Show(new TextHint("<b>强化失败, <color=#FF0000>SCP-682</color>不能进行强化!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									else if (hub.playerStats.maxHP != Scp939MaxHP)
+									else if (hub.playerStats.maxHP != Scp939MaxHP2)
 									{
-										hub.playerStats.maxHP = Scp939MaxHP;
+										hub.playerStats.maxHP = Scp939MaxHP2;
 										SetScpBadge(hub.serverRoles, "SCP-939-53");
 										hub.playerStats.artificialHpDecay = -1.25f;
 										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
@@ -1914,9 +1923,9 @@ namespace CommonPlugin
 								case RoleType.Scp93989:
 									if (hub.playerId == Scp682id)
 										hub.hints.Show(new TextHint("<b>强化失败, <color=#FF0000>SCP-682</color>不能进行强化!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									else if (hub.playerStats.maxHP != Scp939MaxHP)
+									else if (hub.playerStats.maxHP != Scp939MaxHP2)
 									{
-										hub.playerStats.maxHP = Scp939MaxHP;
+										hub.playerStats.maxHP = Scp939MaxHP2;
 										SetScpBadge(hub.serverRoles, "SCP-939-89");
 										hub.playerStats.artificialHpDecay = -1.25f;
 										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));

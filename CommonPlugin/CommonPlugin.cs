@@ -7,7 +7,7 @@ namespace CommonPlugin
 	[PluginDetails(
 		author = "l4kkS41",
 		name = "萌新天堂服务器",
-		description = "萌新天堂服务器核心插件 V2.0",
+		description = "萌新天堂服务器核心插件V2.0",
 		id = "l4kkS41.CommonPlugin",
 		configPrefix = "CM",
 		langFile = "CommonPlugin",
