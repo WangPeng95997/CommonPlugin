@@ -1,4 +1,4 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,6 +6,8 @@ using System.Reflection;
 using CustomPlayerEffects;
 using Hints;
 using InventorySystem;
+using InventorySystem.Items;
+using InventorySystem.Items.Pickups;
 using MEC;
 using Mirror;
 using Respawning;
@@ -36,15 +38,7 @@ namespace CommonPlugin
 		{
 			Scp035id = 0;
 
-			Scp049id = 0;
-
 			Scp079id = 0;
-
-			Scp096id = 0;
-
-			Scp106id = 0;
-
-			Scp173id = 0;
 
 			Scp181id = 0;
 
@@ -52,15 +46,14 @@ namespace CommonPlugin
 
 			Scp703id = 0;
 
-			Scp939id = 0;
-
 			bScp035Detected = false;
 
-			
+            TrapItem = new List<ushort>();
+
 		}
 
 		public EventHandlers(CommonPlugin Plugin)
-        {
+		{
 			this.Plugin = Plugin;
 
 			this.bRoundEnd = false;
@@ -71,25 +64,46 @@ namespace CommonPlugin
 
 			this.Random = new System.Random();
 
-			this.TrapItem = new List<int>();
+			
 
 			this.Coroutines = new List<CoroutineHandle>();
 
 			this.PowerCutCooldown = 45;
 		}
 
-		// Public field
+
+		// 角色生命值
+		public const float ClassdMaxHP = 100.0f;
+
+		public const float ScientistMaxHP = 100.0f;
+
+		public const float NtfMaxHP = 125.0f;
+
+		public const float NtfCaptainMaxHP = 150.0f;
+
+		public const float ChaosMaxHP = 125.0f;
+
+		public const float ChaosRepressorMaxHP = 150.0f;
+
+		public const float Scp0492MaxHP = 500.0f;
+
+		public const float Scp049MaxHP = 2500.0f;
+
+		public const float Scp079MaxHP = 100000.0f;
+
+		public const float Scp096MaxHP = 1500.0f;
+		// 
 		public static int Scp035id;
 
-		public static int Scp049id;
+		//public static int Scp049id;
 
 		public static int Scp079id;
 
-		public static int Scp096id;
+		//public static int Scp096id;
 
-		public static int Scp106id;
+		//public static int Scp106id;
 
-		public static int Scp173id;
+		//public static int Scp173id;
 
 		public static int Scp181id;
 
@@ -97,7 +111,7 @@ namespace CommonPlugin
 
 		public static int Scp703id;
 
-		public static int Scp939id;
+		//public static int Scp939id;
 
 
 		public static bool bScp035Detected;
@@ -119,24 +133,14 @@ namespace CommonPlugin
 
 		private readonly System.Random Random;
 
-		private readonly List<int> TrapItem;
+		public static readonly List<ushort> TrapItem;
 
 		private readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>();
 
 		//private readonly MethodInfo SendSpawnMessage = typeof(NetworkServer).GetMethod("SendSpawnMessage", BindingFlags.NonPublic | BindingFlags.Static);
 
 		// D级人员, 科学家, 九尾狐阵营, 混沌阵营
-		private const int ClassdMaxHP = 100;
-
-		private const int ScientistMaxHP = 100;
-
-		private const int NtfMaxHP = 125;
-
-		private const int NtfCaptainMaxHP = 150;
-
-		private const int ChaosMaxHP = 125;
-
-		private const int ChaosCommandHP = 150;
+		
 
 		// SCP-035
 		private const float Scp035Hit = 4.0f;
@@ -144,11 +148,7 @@ namespace CommonPlugin
 		private const float Scp035Heal = 35.0f;
 
 		// SCP-049 & SCP-049-2
-		private const int Scp0492MaxHP = 500;
-
-		private const int Scp049MaxHP = 2500;
-
-		private const int Scp049MaxHP2 = 2800;
+		
 
 		private const float Scp049Heal = 2.0f;
 
@@ -160,7 +160,7 @@ namespace CommonPlugin
 		private Scp079LevelType Scp079Level = Scp079LevelType.Level_1;
 
 		// SCP-096
-		public readonly int Scp096MaxHP = 1500;
+		
 
 		public static int Scp096AddShield = 70;
 
@@ -175,9 +175,9 @@ namespace CommonPlugin
 
 		private const float Scp106Heal = 20.0f;
 
-		private static int Scp106Cooldown = 25;
+		public const int Scp106Cooldown = 30;
 
-		private static int Scp106LastTrap = 0;
+		public static int Scp106LastPlace = 0;
 
 		// SCP-173
 		
@@ -242,77 +242,9 @@ namespace CommonPlugin
 					Scp079Level = Scp079LevelType.Level_5;
 					PowerCutCooldown = 33;
 					MeThodExtensions.FlickerLights(60.0f, 2);
-					MeThodExtensions.SetScpBadge(ev.Player.GetHub().serverRoles, "SCP-079");
+					MeThodExtensions.SetServerBadge(ev.Player.GetHub().serverRoles, "SCP-079");
 					break;
 			}
-		}
-
-		public void On106CreatePortal(Player106CreatePortalEvent ev)
-		{
-			if (Plugin.Server.Map.WarheadDetonated)
-				return;
-
-			int duration = Plugin.Server.Round.Duration - Scp106LastTrap;
-			if (duration > Scp106Cooldown)
-			{
-				Scp106LastTrap = Plugin.Server.Round.Duration;
-
-				ItemType itemType = ItemType.None;
-				TrapItemType trapItemType = (TrapItemType)Random.Next((int)TrapItemType.TrapItemCount);
-				switch (trapItemType)
-				{
-					case TrapItemType.Adrenaline:
-						itemType = ItemType.Adrenaline;
-						break;
-
-					case TrapItemType.GrenadeFlash:
-						itemType = ItemType.GrenadeFlash;
-						break;
-
-					case TrapItemType.GrenadeFrag:
-						itemType = ItemType.GrenadeHE;
-						break;
-
-					case TrapItemType.KeycardContainmentEngineer:
-						itemType = ItemType.KeycardContainmentEngineer;
-						break;
-
-					case TrapItemType.KeycardFacilityManager:
-						itemType = ItemType.KeycardFacilityManager;
-						break;
-
-					case TrapItemType.KeycardO5:
-						itemType = ItemType.KeycardO5;
-						break;
-
-					case TrapItemType.Medkit:
-						itemType = ItemType.Medkit;
-						break;
-
-					case TrapItemType.SCP018:
-						itemType = ItemType.SCP018;
-						break;
-
-					case TrapItemType.SCP207:
-						itemType = ItemType.SCP207;
-						break;
-
-					case TrapItemType.SCP500:
-						itemType = ItemType.SCP500;
-						break;
-				}
-
-				
-
-				Inventory component = GameObject.Find("Host").GetComponent<Inventory>();
-				Pickup pickup = component.SetPickup(itemType, 0.0f, new Vector3(ev.Position.x, ev.Position.y + 2.5f, ev.Position.z), Quaternion.Euler(Vector3.zero), 0, 0, 0);
-				TrapItem.Add(pickup.gameObject.GetInstanceID());
-				ev.Player.GetHub().hints.Show(new TextHint(
-					"<b><color=#FF0000>诱捕陷阱</color>放置成功!</b>",
-					new HintParameter[] { new StringHintParameter("") }, new HintEffect[] { HintEffectPresets.FadeOut() }, 5.0f));
-			}
-			else
-				ev.Player.ShowHint($"<b>还需要<color=#FF0000>{Scp106Cooldown - duration}</color>秒才能放置诱捕陷阱</b>", 3.0f);
 		}
 
 		public void OnChangeLever(WarheadChangeLeverEvent ev)
@@ -328,7 +260,7 @@ namespace CommonPlugin
 			else if (ev.Player.PlayerID == Scp181id)
 			{
 				Scp181id = 0;
-				MeThodExtensions.ClearScpBadge(ev.Player.GetHub().serverRoles);
+				MeThodExtensions.ClearServerBadge(ev.Player.GetHub().serverRoles);
 			}
 		}
 
@@ -376,7 +308,6 @@ namespace CommonPlugin
 			// 测试
 			if (ev.Player.PlayerID == Scp035id)
 				ev.ActivateContainment = false;
-			ev.Player.GetHub().GetHealthStat().
 		}
 
 		public void OnDecontaminate() => bScp703Activating = false;
@@ -447,11 +378,10 @@ namespace CommonPlugin
 				case RoleType.Scp079:
 					announceMessage = ScpDeathInfo("SCP-079", ev.Killer.Name);
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					ClearScpBadge(player.serverRoles);
+					MeThodExtensions.ClearServerBadge(player.serverRoles);
 					return;
 
 				case RoleType.Scp096:
-					Scp096id = 0;
 					announceMessage = ScpDeathInfo("SCP-096", ev.Killer.Name);
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
 					return;
@@ -459,7 +389,7 @@ namespace CommonPlugin
 				case RoleType.Scp106:
 					announceMessage = ScpDeathInfo("SCP-106", ev.Killer.Name);
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					ClearScpBadge(player.serverRoles);
+					MeThodExtensions.ClearServerBadge(player.serverRoles);
 					return;
 
 				case RoleType.Scp173:
@@ -468,14 +398,13 @@ namespace CommonPlugin
 					return;
 
 				case RoleType.Scp93953:
-					if (ev.Player.PlayerId == Scp682id)
+					if (ev.Player.PlayerID == Scp682id)
 					{
 						Scp682id = 0;
 						announceMessage = ScpDeathInfo("SCP-682", ev.Killer.Name);
 					}
 					else
 						announceMessage = ScpDeathInfo("SCP-939-53", ev.Killer.Name);
-					player.playerStats.artificialHpDecay = 0.75f;
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
 					return;
 
@@ -514,11 +443,11 @@ namespace CommonPlugin
 					break;
 			}
 
-			if (ev.Killer.PlayerId != ev.Player.PlayerId)
+			if (ev.Killer.PlayerID != ev.Player.PlayerID)
 			{
-				if (ev.Killer.PlayerId == Scp035id)
+				if (ev.Killer.PlayerID == Scp035id)
 				{
-					RoundSummary.kills_by_scp++;
+					RoundSummary.KilledBySCPs++;
 					if (!bScp035Detected)
 					{
 						bScp035Detected = true;
@@ -611,9 +540,11 @@ namespace CommonPlugin
 							{
 								ev.Damage = 0.0f;
 								playerhub.inventory.items.RemoveAt(Random.Next(playerhub.inventory.items.Count));
-								playerhub.hints.Show(new TextHint("<b>你使用一件物品抵挡了一次来自<color=#FF0000>SCP</color>的伤害</b>",
+								playerhub.hints.Show(
+									new TextHint("<b>你使用一件物品抵挡了一次来自<color=#FF0000>SCP</color>的伤害</b>",
 									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
-								attackerhub.hints.Show(new TextHint("<b><color=#FF0000>SCP-181</color>使用一件物品抵挡了你的一次伤害</b>",
+								attackerhub.hints.Show(
+									new TextHint("<b><color=#FF0000>SCP-181</color>使用一件物品抵挡了你的一次伤害</b>",
 									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								return;
 							}
@@ -680,6 +611,7 @@ namespace CommonPlugin
 		public void OnPlayerPickupItem(PlayerPickupItemEvent ev)
 		{
 			ItemType itemType = (ItemType)ev.Item.ItemType;
+
 			switch (itemType)
 			{
 				case ItemType.KeycardContainmentEngineer:
@@ -690,33 +622,40 @@ namespace CommonPlugin
 				case ItemType.SCP207:
 				case ItemType.GrenadeHE:
 				case ItemType.GrenadeFlash:
-				case ItemType.SCP018:
 				case ItemType.Adrenaline:
-					if (TrapItem.Contains(ev.Item.UniqueIdentifier))
+					if (TrapItem.Contains(ev.Item.SerialNumber))
 					{
-						ReferenceHub hub = GetReferenceHub(ev.Player);
-						if (hub.scp106PlayerScript.goingViaThePortal) {
+						ReferenceHub hub = ev.Player.GetHub();
+
+						if (hub.scp106PlayerScript.goingViaThePortal)
+						{
 							ev.ChangeTo = Smod2.API.ItemType.NONE;
+
 							return;
 						}
-						else if (hub.playerId == Scp035id) {
+						else if (hub.playerId == Scp035id)
+						{
 							ev.ChangeTo = Smod2.API.ItemType.NONE;
-							hub.hints.Show(new TextHint("<b>该物品为<color=#FF0000>SCP-106</color>的诱捕陷阱</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+							hub.hints.Show(
+								new TextHint("<b>该物品为<color=#FF0000>SCP-106</color>的诱捕陷阱</b>",
+								new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+
 							return;
 						}
 
-						TrapItem.Remove(ev.Item.UniqueIdentifier);
 						ev.ChangeTo = Smod2.API.ItemType.NONE;
 						ev.Item.Remove();
-						Timing.RunCoroutine(Timing_OnTriggerTrapItem(ev.Player));
+						TrapItem.Remove(ev.Item.SerialNumber);
+
+						Timing.RunCoroutine(Timing_OnTriggerTrapItem(hub));
 					}
 					break;
-            }
+			}
 		}
 
 		public void OnPlayerTriggerTesla(PlayerTriggerTeslaEvent ev)
 		{
-			if (ev.Player.PlayerId == Scp181id)
+			if (ev.Player.PlayerID == Scp181id)
 				ev.Triggerable = false;
 		}
 
@@ -842,7 +781,6 @@ namespace CommonPlugin
 			ReferenceHub hub = ev.Player.GetHub();
 			ev.UsingDefaultItem = false;
 			ev.Items.Clear();
-			ev.Player.GetHub().inventory.drop
 
 			switch (hub.characterClassManager.NetworkCurClass)
 			{
@@ -1026,7 +964,7 @@ namespace CommonPlugin
 			bScp035Detected = false;
 			Scp079Level = Scp079LevelType.Level_1;
 			PowerCutCooldown = 50;
-			Scp106LastTrap = 0;
+			Scp106LastPlace = 0;
 			Scp703id = 0;
 
 			bWarhead = false;
@@ -1036,7 +974,7 @@ namespace CommonPlugin
 		}
 
 		private IEnumerator<float> Timing_SelfHealth(ReferenceHub hub)
-        {
+		{
 			int n = 0;
 			Vector3 v3 = Vector3.zero; 
 			Transform transform = hub.transform;
@@ -1046,9 +984,9 @@ namespace CommonPlugin
 					while (!bRoundEnd && hub.characterClassManager.NetworkCurClass == RoleType.Scp049)
 					{
 						if (transform.position == v3)
-                        {
+						{
 							if(++n > selfHealCooldown)
-                            {
+							{
 								if (hub.playerStats.maxHP == Scp049MaxHP2)
 								{
 									if (hub.playerStats.Health + healScp049_2 < Scp049MaxHP2)
@@ -1069,7 +1007,7 @@ namespace CommonPlugin
 							}
 						}
 						else
-                        {
+						{
 							n = 0;
 							v3 = transform.position;
 						}
@@ -1093,9 +1031,9 @@ namespace CommonPlugin
 					while (!bRoundEnd && hub.characterClassManager.NetworkCurClass == RoleType.Scp096)
 					{
 						if (transform.position == v3)
-                        {
+						{
 							if (++n > selfHealCooldown)
-                            {
+							{
 								if (hub.playerStats.Health + Scp096Heal < hub.playerStats.maxHP)
 									hub.playerStats.Health += Scp096Heal;
 								else
@@ -1106,7 +1044,7 @@ namespace CommonPlugin
 							}
 						}
 						else
-                        {
+						{
 							n = 0;
 							v3 = transform.position;
 						}
@@ -1120,9 +1058,9 @@ namespace CommonPlugin
 					while (!bRoundEnd && hub.characterClassManager.NetworkCurClass == RoleType.Scp173)
 					{
 						if (transform.position == v3)
-                        {
+						{
 							if (++n > selfHealCooldown)
-                            {
+							{
 								if (hub.playerStats.Health + Heal173 < hub.playerStats.maxHP)
 									hub.playerStats.Health += Heal173;
 								else
@@ -1133,7 +1071,7 @@ namespace CommonPlugin
 							}
 						}
 						else
-                        {
+						{
 							n = 0;
 							v3 = transform.position;
 						}
@@ -1392,16 +1330,16 @@ namespace CommonPlugin
 			Timing.RunCoroutine(Timing_OnScp703Activate(vector3));
 
 			// 选取所有的D级人员
-			int randomGen = 0;
+			int index = 0;
 			List<Player> Players = Plugin.Server.GetPlayers(Smod2.API.RoleType.CLASSD);
 
 			// 创建SCP-181
 			if (Players.Count > 3)
 			{
-				randomGen = Random.Next(Players.Count);
-				hub = GetReferenceHub(Players[randomGen]);
+				index = Random.Next(Players.Count);
+				hub = GetReferenceHub(Players[index]);
 				SetScp181(hub);
-				Players.RemoveAt(randomGen);
+				Players.RemoveAt(index);
 			}
 
 			// 在基础上增加科学家和设施警卫
@@ -1411,17 +1349,17 @@ namespace CommonPlugin
 			// 创建SCP-035
 			if (PlayerManager.players.Count > 10)
 			{
-				randomGen = Random.Next(Players.Count);
-				hub = GetReferenceHub(Players[randomGen]);
+				index = Random.Next(Players.Count);
+				hub = GetReferenceHub(Players[index]);
 				SetScp035(hub);
-				Players.RemoveAt(randomGen);
+				Players.RemoveAt(index);
 			}
 
 			// 创建SCP-682或本局未生成的SCP
 			if (PlayerManager.players.Count > 15)
 			{
-				randomGen = Random.Next(Players.Count);
-				hub = GetReferenceHub(Players[randomGen]);
+				index = Random.Next(Players.Count);
+				hub = GetReferenceHub(Players[index]);
 				Timing.RunCoroutine(Timing_SetRandomScp(hub));
 			}
 
@@ -1945,8 +1883,6 @@ namespace CommonPlugin
 		{
 			yield return Timing.WaitForOneFrame;
 
-			hub.playerStats.maxHP = hp;
-			hub.playerStats.Health = hp;
 			switch (hub.characterClassManager.NetworkCurClass)
 			{
 				case RoleType.ClassD:
@@ -2077,24 +2013,27 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnTriggerTrapItem(Player player)
-        {
-			ReferenceHub victim = GetReferenceHub(player);
-			victim.scp106PlayerScript.RpcTeleportAnimation();
+		private IEnumerator<float> Timing_OnTriggerTrapItem(ReferenceHub victim)
+		{
+			victim.scp106PlayerScript.TeleportAnimation();
 			victim.scp106PlayerScript.goingViaThePortal = true;
-			yield return Timing.WaitForSeconds(3.5f);
-			victim.playerMovementSync.OverridePosition(Vector3.down * 1997.0f, 0.0f, true);
-			victim.scp106PlayerScript.goingViaThePortal = false;
-			victim.hints.Show(new TextHint("<b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-			victim.playerEffectsController.GetEffect<Corroding>().IsInPd = true;
-			victim.playerEffectsController.EnableEffect<Corroding>(0.0f, false);
 
+			yield return Timing.WaitForSeconds(3.4f);
+
+			victim.playerEffectsController.EnableEffect<Corroding>(0.0f, false);
+			victim.scp106PlayerScript.goingViaThePortal = false;
+			victim.hints.Show(
+				new TextHint("<b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b>",
+				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+
+			/*
 			foreach (GameObject gameObject in PlayerManager.players)
 			{
 				ReferenceHub hub = GetReferenceHub(gameObject);
 				if (hub.characterClassManager.NetworkCurClass == RoleType.Scp106)
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.Person, hub.playerId, $"<color=#FFFF00>{victim.nicknameSync.MyNick}</color>触发了你的<color=#FF0000>诱捕陷阱</color>", 5));
 			}
+			*/
 
 			yield break;
 		}
@@ -2242,10 +2181,10 @@ namespace CommonPlugin
 						{
 							case RoleType.Scientist:
 							case RoleType.FacilityGuard:
-							case RoleType.NtfCadet:
-							case RoleType.NtfLieutenant:
-							case RoleType.NtfScientist:
-							case RoleType.NtfCommander:
+							case RoleType.NtfPrivate:
+							case RoleType.NtfSergeant:
+							case RoleType.NtfSpecialist:
+							case RoleType.NtfCaptain:
 								if (personMessage.PlayerId != Scp035id)
 									personMessage.TextDisplay.Add(new Message(text, duration));
 								break;
@@ -2259,7 +2198,10 @@ namespace CommonPlugin
 						switch (personMessage.Hub.characterClassManager.NetworkCurClass)
 						{
 							case RoleType.ClassD:
-							case RoleType.ChaosInsurgency:
+							case RoleType.ChaosConscript:
+							case RoleType.ChaosRifleman:
+							case RoleType.ChaosMarauder:
+							case RoleType.ChaosRepressor:
 								if (personMessage.PlayerId != Scp035id)
 									personMessage.TextDisplay.Add(new Message(text, duration));
 								break;
@@ -2302,13 +2244,6 @@ namespace CommonPlugin
 						personMessage.TextDisplay.Add(new Message(text, duration));
 					break;
 			}
-
-			yield break;
-		}
-
-		private IEnumerator<float> Timing_PowerCutTimer()
-		{
-
 
 			yield break;
 		}

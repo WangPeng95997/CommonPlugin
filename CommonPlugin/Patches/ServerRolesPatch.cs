@@ -1,8 +1,9 @@
-﻿using System;
+﻿using MEC;
+using Mirror;
+using PlayerStatsSystem;
+using System;
 using UnityEngine;
 using HarmonyLib;
-using MEC;
-using Mirror;
 
 namespace CommonPlugin.Patches
 {
@@ -26,16 +27,9 @@ namespace CommonPlugin.Patches
 
                     ReferenceHub hub = ReferenceHub.GetHub(__instance.gameObject);
                     hub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
-                    hub.playerStats.Health = 100.0f;
+                    hub.playerStats.GetModule<HealthStat>().CurValue = 100.0f;
                     hub.playerMovementSync.OverridePosition(startPostion);
                 });
-        }
-
-        public static void SetStartScreen()
-        {
-            transform = GameObject.Find("StartRound").transform;
-            transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
-            startPostion = new System.Random().Next(2) == 0 ? defaultPostion : GetWarheadPostion();
         }
 
         public static Vector3 GetWarheadPostion()
@@ -46,14 +40,21 @@ namespace CommonPlugin.Patches
             switch (Convert.ToInt32(tf.rotation.eulerAngles.y))
             {
                 case 180:
-                    return new Vector3(postion.x + 9.34f, -596.20f, postion.z - 10.58f);
+                    return new Vector3(postion.x + 9.34f, -596.6f, postion.z - 10.58f);
 
                 case 270:
-                    return new Vector3(postion.x - 10.55f, -596.20f, postion.z - 9.39f);
+                    return new Vector3(postion.x - 10.55f, -596.8f, postion.z - 9.39f);
 
                 default:
                     return defaultPostion;
             }
+        }
+
+        public static void SetStartScreen()
+        {
+            transform = GameObject.Find("StartRound").transform;
+            transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
+            startPostion = new System.Random().Next(2) == 0 ? defaultPostion : GetWarheadPostion();
         }
     }
 }

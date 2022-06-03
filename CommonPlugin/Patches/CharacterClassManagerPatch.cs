@@ -6,7 +6,7 @@ using HarmonyLib;
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(CharacterClassManager), "UserCode_CmdRequestHideTag")]
-    internal static class CallCmdRequestHideTagPatch
+    internal static class CmdRequestHideTagPatch
     {
         private static bool Prefix(CharacterClassManager __instance)
         {

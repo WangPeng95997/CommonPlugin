@@ -1,11 +1,11 @@
-﻿using HarmonyLib;
-using Interactables.Interobjects;
+﻿using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
+using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(DoorVariant), "ServerInteract", typeof(ReferenceHub), typeof(byte))]
-    internal static class DoorVariantPatch
+    internal static class ServerInteractPatch
     {
         private static void Prefix(DoorVariant __instance, ReferenceHub ply, byte colliderId)
         {

@@ -79,9 +79,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\InventoryExtensions.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ReferenceHubExtensions.cs" />
+    <Compile Include="Extensions\Scp106PlayerScriptExtensions.cs" />
+    <Compile Include="Patches\HealthStatPatch.cs" />
+    <Compile Include="Patches\InventoryPatch.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
     <Compile Include="Patches\FallDamagePatch.cs" />
     <Compile Include="Patches\ServerRolesPatch.cs" />
@@ -104,7 +108,10 @@
     <Compile Include="Patches\Scp939PlayerScriptPatch.cs" />
     <Compile Include="Patches\SinkholeEnvironmentalHazardPatch.cs" />
     <Compile Include="MapManager.cs" />
-    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Command\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

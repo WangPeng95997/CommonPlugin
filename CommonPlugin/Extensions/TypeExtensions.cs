@@ -1,5 +1,14 @@
-﻿namespace CommonPlugin
+﻿namespace CommonPlugin.Extensions
 {
+	public enum CustomScpType
+	{
+		Scp035,
+		Scp181,
+		Scp682,
+		Scp703,
+		CustomScpCount
+	}
+
 	public enum LCZRoomType
 	{
 		Scp012Room,
@@ -44,15 +53,6 @@
 		Level_5,
 	}
 
-	public enum CustomScpType
-	{
-		Scp035,
-		Scp181,
-		Scp682,
-		Scp703
-		CustomScpCount
-	}
-
 	public enum TrapItemType
 	{
 		Adrenaline,
@@ -62,9 +62,10 @@
 		KeycardFacilityManager,
 		KeycardO5,
 		Medkit,
-		SCP018,
 		SCP207,
+		SCP268,
 		SCP500,
+		SCP1853,
 		TrapItemCount
 	}
 }

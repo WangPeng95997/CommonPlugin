@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using Assets._Scripts.Dissonance;
 using HarmonyLib;
 
@@ -8,15 +7,7 @@ namespace CommonPlugin.Patches
     [HarmonyPatch(typeof(Radio), "UserCode_CmdSyncTransmissionStatus", typeof(bool))]
     internal static class RadioPatch
     {
-        private static Type type;
-
-        private static FieldInfo fieldInfo;
-
-        static RadioPatch()
-        {
-            type = typeof(Radio);
-            fieldInfo = type.GetField("_dissonanceSetup", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
+        private static FieldInfo fieldInfo = typeof(Radio).GetField("_dissonanceSetup", BindingFlags.Instance | BindingFlags.NonPublic);
 
         private static void Prefix(Radio __instance, bool b)
         {

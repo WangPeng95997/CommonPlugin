@@ -14,13 +14,12 @@ namespace CommonPlugin.Extensions
 	{
 		private static System.Random Random = new System.Random();
 
-		public static void ClearScpBadge(ServerRoles serverRoles, string badgeColor = "default")
+		public static void ClearServerBadge(ServerRoles serverRoles, string badgeColor = "default")
 		{
 			if (string.IsNullOrEmpty(serverRoles.NetworkGlobalBadge))
 			{
-				serverRoles.HiddenBadge = null;
-				serverRoles.NetworkMyText = null;
-				serverRoles.NetworkMyColor = badgeColor;
+				serverRoles.Network_myText = null;
+				serverRoles.Network_myColor = badgeColor;
 				serverRoles.RpcResetFixed();
 			}
 		}
@@ -88,6 +87,8 @@ namespace CommonPlugin.Extensions
 						break;
 
 					case RandomScpType.Scp939:
+						bRandomEnd = true;
+
 						if (new System.Random().Next(2) == 0)
 							roleType = RoleType.Scp93953;
 						else
@@ -99,35 +100,24 @@ namespace CommonPlugin.Extensions
 			return roleType;
 		}
 
-		public static void SetScpBadge(ServerRoles serverRoles, string badgeName, string badgeColor = "red")
+		public static void SetServerBadge(ServerRoles serverRoles, string badgeName, string badgeColor = "red")
 		{
 			if (string.IsNullOrEmpty(serverRoles.NetworkGlobalBadge))
 			{
-				serverRoles.NetworkMyText = badgeName;
-				serverRoles.NetworkMyColor = badgeColor;
+				serverRoles.Network_myText = badgeName;
+				serverRoles.Network_myColor = badgeColor;
 			}
 		}
 
-		public static ItemPickupBase SpawnItem(ItemType itemType, Vector3 position, Quaternion ratation, int ammo)
-        {
-			Inventory component = GameObject.Find("Host").GetComponent<Inventory>();
+		public static ItemPickupBase SpawnItem(ItemType itemType, Vector3 position, Quaternion rotation, int ammo = 0)
+		{
+			ItemBase itemBase;
+			InventoryItemLoader.AvailableItems.TryGetValue(itemType, out itemBase);
 
-			ItemBase original;
-			InventoryItemLoader.AvailableItems.TryGetValue(itemType, out original);
-
-			ItemBase itemBase = Object.Instantiate(original, component.transform);
-			PickupSyncInfo pickupSyncInfo = new PickupSyncInfo
-			{
-				ItemId = itemType,
-				Serial = ItemSerialGenerator.GenerateNext(),
-				Weight = itemBase.Weight,
-				Position = position,
-				Rotation = new LowPrecisionQuaternion(ratation)
-			};
-			ItemPickupBase itemPickupBase = component.ServerCreatePickup(itemBase, pickupSyncInfo);
+			ItemPickupBase itemPickupBase = Object.Instantiate(itemBase.PickupDropModel, position, rotation);
 
 			switch (itemType)
-            {
+			{
 				// WeaponType
 				case ItemType.GunCOM15:
 				case ItemType.MicroHID:
@@ -151,7 +141,20 @@ namespace CommonPlugin.Extensions
 				case ItemType.Ammo9x19:
 					(itemPickupBase as AmmoPickup).NetworkSavedAmmo = (ushort)ammo;
 					break;
-            }
+			}
+
+			NetworkServer.Spawn(itemPickupBase.gameObject);
+
+			itemPickupBase.NetworkInfo = new PickupSyncInfo
+			{
+				ItemId = itemType,
+				Serial = ItemSerialGenerator.GenerateNext(),
+				Weight = itemBase.Weight,
+				Position = position,
+				Rotation = new LowPrecisionQuaternion(rotation)
+			};
+
+			itemPickupBase.gameObject.GetComponent<Rigidbody>().mass = Mathf.Max(0.3f, itemBase.Weight);
 
 			return itemPickupBase;
 		}
@@ -163,17 +166,75 @@ namespace CommonPlugin.Extensions
 					fc.ServerFlickerLights(duration);
 		}
 
+		public static void PlaceTrapItem(Vector3 position)
+        {
+			ItemType itemType = ItemType.None;
+			TrapItemType trapItemType = (TrapItemType)Random.Next((int)TrapItemType.TrapItemCount);
+
+			switch (trapItemType)
+			{
+				case TrapItemType.Adrenaline:
+					itemType = ItemType.Adrenaline;
+					break;
+
+				case TrapItemType.GrenadeFlash:
+					itemType = ItemType.GrenadeFlash;
+					break;
+
+				case TrapItemType.GrenadeFrag:
+					itemType = ItemType.GrenadeHE;
+					break;
+
+				case TrapItemType.KeycardContainmentEngineer:
+					itemType = ItemType.KeycardContainmentEngineer;
+					break;
+
+				case TrapItemType.KeycardFacilityManager:
+					itemType = ItemType.KeycardFacilityManager;
+					break;
+
+				case TrapItemType.KeycardO5:
+					itemType = ItemType.KeycardO5;
+					break;
+
+				case TrapItemType.Medkit:
+					itemType = ItemType.Medkit;
+					break;
+
+				case TrapItemType.SCP207:
+					itemType = ItemType.SCP207;
+					break;
+
+				case TrapItemType.SCP268:
+					itemType = ItemType.SCP268;
+					break;
+
+				case TrapItemType.SCP500:
+					itemType = ItemType.SCP500;
+					break;
+
+				case TrapItemType.SCP1853:
+					itemType = ItemType.SCP1853;
+					break;
+			}
+
+			ItemPickupBase itemPickupBase = SpawnItem(itemType, new Vector3(position.x, position.y, position.z) + Vector3.up, Quaternion.Euler(Vector3.zero));
+			EventHandlers.TrapItem.Add(itemPickupBase.NetworkInfo.Serial);
+		}
+
 		public static void SetScp035(ReferenceHub hub)
 		{
-			IsScp035Hidden = false;
-			Scp035id = hub.playerId;
-			hub.playerStats.NetworkmaxArtificialHealth = 35;
-			hub.hints.Show(new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-035</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<size=35><b></b></size>\n<size=35><b>你拥有极高的子弹抗性, 与其他<color=#FF0000>SCP</color>合作, 消灭所有人类</b></size></voffset>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
+			EventHandlers.Scp035id = hub.playerId;
+			hub.GetAhpProcess().Limit = 35.0f;
+			hub.hints.Show(
+				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-035</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+				$"<size=35><b></b></size>\n<size=35><b>你拥有极高的子弹抗性, 与其他<color=#FF0000>SCP</color>合作, 消灭所有人类</b></size></voffset>",
+				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 		}
 
 		public static void SetScp181(ReferenceHub hub)
 		{
-			Scp181id = hub.playerId;
+			/*
 			SetScpBadge(hub.serverRoles, "SCP-181");
 			hub.inventory.ServerDropAll();
 			hub.inventory.AddNewItem(ItemType.Flashlight);
@@ -184,11 +245,16 @@ namespace CommonPlugin.Extensions
 			hub.inventory.AddNewItem(ItemType.SCP207);
 			hub.inventory.AddNewItem(ItemType.SCP207);
 			hub.inventory.AddNewItem(ItemType.Coin);
-			hub.hints.Show(new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-181</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<size=35><b>你有几率打开任何门</b></size>\n<size=35><b>背包里的每件物品都能为你抵挡一次来自<color=#FF0000>SCP</color>的伤害</b></size></voffset>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
+			hub.hints.Show(new TextHint(
+				$"<voffset=27em><size=120><color=#FF0000><b>SCP-181</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<size=35><b>" +
+				$"你有几率打开任何门</b></size>\n<size=35><b>背包里的每件物品都能为你抵挡一次来自<color=#FF0000>SCP</color>的伤害</b></size></voffset>",
+				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
+			*/
 		}
 
 		public static void SetScp682(ReferenceHub hub)
 		{
+			/*
 			Scp682id = hub.playerId;
 			SetScpBadge(hub.serverRoles, "SCP-682");
 			if (new System.Random().Next(2) == 0)
@@ -199,15 +265,7 @@ namespace CommonPlugin.Extensions
 			Timing.CallDelayed(0.1f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
 			Timing.CallDelayed(1.0f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
 			Timing.CallDelayed(2.0f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
-		}
-
-		public static ReferenceHub GetHub(int PlayerId)
-		{
-			foreach (GameObject gameObject in PlayerManager.players)
-				if (ReferenceHub.GetHub(gameObject).playerId == PlayerId)
-					return ReferenceHub.GetHub(gameObject);
-
-			return null;
+			*/
 		}
 	}
 }
