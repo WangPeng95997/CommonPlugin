@@ -1,0 +1,95 @@
+if (NetworkServer.active)
+{
+	RoleType curClass = this._hub.characterClassManager.CurClass;
+	if (curClass == RoleType.None || curClass == RoleType.Spectator || curClass == RoleType.Scp079)
+	{
+		this._realModelPosition = Vector3.up * 2080f;
+		return;
+	}
+	if (curClass == global::RoleType.Tutorial || this.NoclipWhitelisted)
+	{
+	this.RealModelPosition = this._receivedPosition;
+	base.transform.position = this._realModelPosition;
+	this.NetworkGrounded = true;
+	return;
+	}
+	float num;
+	try
+	{
+		this._hub.fpc.GetSpeed(out num, true);
+	}
+	catch (Exception exception)
+	{
+		DebugLog.LogException(exception);
+		return;
+	}
+	Vector3 vector = this._receivedPosition - this._realModelPosition;
+	float num2 = vector.y;
+	vector.y = 0f;
+	float magnitude = vector.magnitude;
+	Vector3 vector2 = vector.normalized * (num * 1.3f * Time.fixedDeltaTime);
+	float magnitude2 = vector2.magnitude;
+	if (magnitude < magnitude2)
+	{
+		vector2 *= magnitude / magnitude2;
+		magnitude2 = vector2.magnitude;
+	}
+	if (this.Grounded && !this._receivedJump)
+	{
+		this._moveY = -0.2f;
+		vector2.y = this._moveY;
+		this._wasGrounded = 0U;
+		this._zeroCounter = 0U;
+	}
+	else if (this._receivedJump && (this.Grounded || this._wasGrounded < 5U))
+	{
+		this._receivedJump = false;
+		this._wasGrounded = 5U;
+		this._zeroCounter = 0U;
+		this._moveY = this._hub.characterClassManager.CurRole.jumpSpeed * 0.02f;
+		vector2.y = this._moveY;
+	}
+	else
+	{
+		if (this._wasGrounded < 4294967295U)
+		{
+			this._wasGrounded += 1U;
+		}
+		this._moveY += (PlayerMovementSync.UnityGravity * (Time.fixedDeltaTime * Time.fixedDeltaTime)).y;
+		if (num2 == 0f)
+		{
+			if (this._zeroCounter < 4294967295U)
+			{
+				this._zeroCounter += 1U;
+			}
+			if (this._zeroCounter == 2U)
+			{
+				num2 -= 0.01f;
+				this._receivedPosition.y = this._receivedPosition.y - 0.01f;
+			}
+		}
+		else
+		{
+			this._zeroCounter = 0U;
+		}
+		if (this._received3D && this._moveY < 0f && this._receivedPosition.y - this.LastGroundedPosition.y < 0f && this._receivedPosition.y - this.RealModelPosition.y <= 0f && this._zeroCounter < 15U && this._wasGrounded < 125U)
+		{
+			vector2.y = num2;
+		}
+		else
+		{
+			vector2.y = this._moveY;
+		}
+	}
+	this._cc.Move(vector2);
+	this.RealModelPosition = base.transform.position;
+	this.NetworkGrounded = this._cc.isGrounded;
+	if (this.Grounded)
+	{
+		this.LastGroundedPosition = this.RealModelPosition;
+	}
+	if (this._hub.characterClassManager.CurClass == RoleType.Scp106)
+	{
+		this.Scp106ProcessColliders();
+	}
+}

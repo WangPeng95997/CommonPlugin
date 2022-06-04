@@ -11,9 +11,9 @@ namespace CommonPlugin.Patches
 
         private static void Prefix(Radio __instance, bool b)
         {
-            CharacterClassManager ccm = __instance.gameObject.GetComponent<CharacterClassManager>();
+            RoleType roleType = __instance.gameObject.GetComponent<CharacterClassManager>().NetworkCurClass;
 
-            switch (ccm.NetworkCurClass)
+            switch (roleType)
             {
                 case RoleType.Scp049:
                 case RoleType.Scp0492:

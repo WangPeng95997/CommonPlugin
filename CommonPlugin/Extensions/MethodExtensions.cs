@@ -89,7 +89,7 @@ namespace CommonPlugin.Extensions
 					case RandomScpType.Scp939:
 						bRandomEnd = true;
 
-						if (new System.Random().Next(2) == 0)
+						if (Random.Next(2) == 0)
 							roleType = RoleType.Scp93953;
 						else
 							roleType = RoleType.Scp93989;

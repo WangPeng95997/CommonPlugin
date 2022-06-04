@@ -1,0 +1,11 @@
+protected void OnEffectsActivated()
+{
+	float health = 0f;
+	float artificialHealth = 0f;
+	float healthRegenAmount = 0f;
+	float healthRegenSpeedMultiplier = 0f;
+	float stamina = 0f;
+	ConsumableItem itemTypeId = (ConsumableItem)this.ItemTypeId;
+	PlayerConsumableUseEvent playerConsumableUseEvent = new PlayerConsumableUseEvent(new SmodPlayer(base.Owner.gameObject), health, artificialHealth, stamina, itemTypeId, healthRegenAmount, healthRegenSpeedMultiplier);
+	EventManager.Manager.HandleEvent<IEventHandlerConsumableUse>(playerConsumableUseEvent);
+}

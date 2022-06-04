@@ -1,0 +1,38 @@
+if (!NetworkServer.active)
+{
+	return;
+}
+if (this.ActiveLocks > 0)
+{
+	DoorLockMode mode = DoorLockUtils.GetMode((DoorLockReason)this.ActiveLocks);
+	if ((!mode.HasFlagFast(DoorLockMode.CanClose) || !mode.HasFlagFast(DoorLockMode.CanOpen)) && (!mode.HasFlagFast(DoorLockMode.ScpOverride) || ply.characterClassManager.CurRole.team != global::Team.SCP) && (mode == DoorLockMode.FullLock || (this.TargetState && !mode.HasFlagFast(DoorLockMode.CanClose)) || (!this.TargetState && !mode.HasFlagFast(DoorLockMode.CanOpen))))
+	{
+		this.LockBypassDenied(ply, colliderId);
+		return;
+	}
+}
+if (this.AllowInteracting(ply, colliderId))
+{
+	if (ply.characterClassManager.CurClass == global::RoleType.Scp079 || this.RequiredPermissions.CheckPermissions(ply.inventory.CurInstance, ply))
+	{
+		this.NetworkTargetState = !this.TargetState;
+		this._triggerPlayer = ply;
+		return;
+	}
+	string getName = base.gameObject.GetComponent<DoorNametagExtension>().GetName;
+	if (ply.characterClassManager.NetworkCurClass != RoleType.Scp0492 && (getName == "079_FIRST" || getName == "079_SECOND" || getName == "HID" || getName == "INTERCOM" || getName == "SURFACE_NUKE"))
+	{
+		switch (ply.inventory.CurInstance.ItemTypeId)
+		{
+			case global::ItemType.KeycardNTFOfficer:
+			case global::ItemType.KeycardNTFLieutenant:
+			case global::ItemType.KeycardNTFCommander:
+			case global::ItemType.KeycardChaosInsurgency:
+				this.NetworkTargetState = !this.TargetState;
+				this._triggerPlayer = ply;
+				return;
+		}
+	}
+	this.PermissionsDenied(ply, colliderId);
+	DoorEvents.TriggerAction(this, DoorAction.AccessDenied, ply);
+}

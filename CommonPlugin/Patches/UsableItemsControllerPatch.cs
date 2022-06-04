@@ -62,8 +62,8 @@ namespace CommonPlugin.Patches
                     case ItemType.SCP268:
                     case ItemType.Painkillers:
                         hub.hints.Show(
-                    new TextHint("<b><color=#FF0000>SCP-035</color>不能使用该物品</b>",
-                    new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+                            new TextHint("<b><color=#FF0000>SCP-035</color>不能使用该物品</b>",
+                            new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 
                         return false;
                 }

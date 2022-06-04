@@ -1,6 +1,8 @@
 ﻿using PlayerStatsSystem;
 using HarmonyLib;
 
+using CommonPlugin.Extensions;
+
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(HealthStat), "MaxValue", MethodType.Getter)]
@@ -71,10 +73,12 @@ namespace CommonPlugin.Patches
     {
         private static bool Prefix(HealthStat __instance, float healAmount)
         {
-            if (__instance.CurValue + healAmount > __instance.MaxValue)
-                __instance.CurValue = __instance.MaxValue;
+            HealthStatEx healthStat = __instance as HealthStatEx;
+
+            if (healthStat.Health + healAmount > healthStat.MaxHealth)
+                healthStat.Health = healthStat.MaxHealth;
             else
-                __instance.CurValue += healAmount;
+                healthStat.Health += healAmount;
 
             return false;
         }

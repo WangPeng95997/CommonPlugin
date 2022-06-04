@@ -1,0 +1,18 @@
+this.RealModelPosition = pos;
+this.LastGroundedPosition = pos;
+base.transform.position = pos;
+this._moveY = 0f;
+this._hub.falldamage.PreviousHeight = pos.y;
+this._resetS = 0f;
+this._resetL = 0f;
+this._violationsS = 0;
+this._violationsL = 0;
+this._positionForced = true;
+this._suppressViolations = true;
+this._forcePositionTime = 0f;
+this._forcedPosTime = 0f;
+if (this._corroding.IsEnabled && pos.y > -1900f)
+{
+	this._corroding.Intensity = 0;
+}
+this.TargetForcePosition(base.connectionToClient, pos);

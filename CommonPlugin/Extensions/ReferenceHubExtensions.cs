@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using UnityEngine;
 using PlayerStatsSystem;
 
 namespace CommonPlugin.Extensions
 {
     public static class ReferenceHubExtensions
     {
+        private static FieldInfo fieldInfo = typeof(AhpStat).GetField("_activeProcesses", BindingFlags.Instance | BindingFlags.NonPublic);
+
         public static AhpStat.AhpProcess GetAhpProcess(this ReferenceHub hub)
         {
-            Type type = typeof(AhpStat);
-            FieldInfo fieldInfo = type.GetField("_activeProcesses", BindingFlags.Instance | BindingFlags.NonPublic);
+            AhpStat.AhpProcess ahpProcess = (fieldInfo.GetValue(hub.playerStats.StatModules[1] as AhpStat) as IEnumerable<AhpStat.AhpProcess>).FirstOrDefault();
 
-            return (fieldInfo.GetValue(hub.playerStats.StatModules[1] as AhpStat) as IEnumerable<AhpStat.AhpProcess>).FirstOrDefault();
+            return ahpProcess is not null ? ahpProcess : (hub.playerStats.StatModules[1] as AhpStat).ServerAddProcess();
         }
 
         public static HealthStat GetHealthStat(this ReferenceHub hub)

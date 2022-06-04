@@ -1,0 +1,39 @@
+inventoryRoleInfo.Ammo.Clear();
+switch (newRole)
+{
+	case RoleType.FacilityGuard:
+	case RoleType.NtfPrivate:
+	case RoleType.ChaosConscript:
+	case RoleType.ChaosRifleman:
+		inventory.ServerAddAmmo(ItemType.Ammo556x45, 200);
+		inventory.ServerAddAmmo(ItemType.Ammo762x39, 200);
+		inventory.ServerAddAmmo(ItemType.Ammo9x19, 200);
+		break;
+
+	case RoleType.NtfSergeant:
+	case RoleType.NtfSpecialist:
+		inventory.ServerAddAmmo(ItemType.Ammo44cal, 40);
+		inventory.ServerAddAmmo(ItemType.Ammo556x45, 200);
+		inventory.ServerAddAmmo(ItemType.Ammo762x39, 200);
+		inventory.ServerAddAmmo(ItemType.Ammo9x19, 200);
+		break;
+
+	case RoleType.NtfCaptain:
+		inventory.ServerAddAmmo(ItemType.Ammo12gauge, 100);
+		inventory.ServerAddAmmo(ItemType.Ammo556x45, 300);
+		inventory.ServerAddAmmo(ItemType.Ammo762x39, 300);
+		inventory.ServerAddAmmo(ItemType.Ammo9x19, 300);
+		break;
+
+	case RoleType.ChaosRepressor:
+		inventory.ServerAddAmmo(ItemType.Ammo12gauge, 70);
+		inventory.ServerAddAmmo(ItemType.Ammo44cal, 70);
+		break;
+
+	case RoleType.ChaosMarauder:
+		inventory.ServerAddAmmo(ItemType.Ammo12gauge, 100);
+		inventory.ServerAddAmmo(ItemType.Ammo556x45, 300);
+		inventory.ServerAddAmmo(ItemType.Ammo762x39, 300);
+		inventory.ServerAddAmmo(ItemType.Ammo9x19, 300);
+		break;
+}

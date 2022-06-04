@@ -1,0 +1,6 @@
+this.ProcessMovement();
+if (NetworkServer.active)
+{
+	this._hub.falldamage.CalculateGround();
+	this.Tracer.Record(this.RealModelPosition);
+}

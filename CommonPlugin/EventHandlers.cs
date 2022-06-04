@@ -10,6 +10,7 @@ using InventorySystem.Items;
 using InventorySystem.Items.Pickups;
 using MEC;
 using Mirror;
+using PlayerStatsSystem;
 using Respawning;
 using Scp914;
 using UnityEngine;
@@ -24,7 +25,7 @@ using CommonPlugin.Extensions;
 
 namespace CommonPlugin
 {
-    public class EventHandlers : IEventHandler079LevelUp, IEventHandler106CreatePortal, IEventHandlerCheckEscape, IEventHandlerRecallZombie, IEventHandlerCheckRoundEnd,
+    public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerRecallZombie, IEventHandlerCheckRoundEnd,
 		IEventHandlerContain106, IEventHandlerLCZDecontaminate, IEventHandlerPlayerSCP207Use, IEventHandlerPlayerDie,
 		IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave, IEventHandlerPlayerPickupItem, IEventHandlerPlayerTriggerTesla, IEventHandlerPocketDimensionDie,
 		IEventHandlerPocketDimensionEnter, IEventHandlerPocketDimensionExit, IEventHandlerRoundEnd, IEventHandlerRoundStart, IEventHandlerScp096AddTarget, IEventHandlerSCP914Activate,
@@ -318,20 +319,30 @@ namespace CommonPlugin
 			Plugin.Server.Map.OverchargeLights(900.0f, false);
 		}
 
-		public void OnMedicalUse(PlayerMedicalUseEvent ev)
+		public void OnConsumableUse(PlayerConsumableUseEvent ev)
 		{
-			ItemType itemType = (ItemType)ev.MedicalItem;
-			ev.AmountArtificial = 0;
-			ev.AmountHealth = 0;
+			ReferenceHub hub = ev.Player.GetHub();
+			ItemType itemType = (ItemType)ev.ConsumableItem;
 
 			switch (itemType)
 			{
 				case ItemType.Medkit:
-					Timing.RunCoroutine(Timing_OnMedkitEffect(ev.Player));
+					hub.playerStats.GetModule<HealthStat>().ServerHeal(hub.playerId == Scp035id ? Scp035Heal : MedkitHeal);
+					hub.playerEffectsController.UseMedicalItem(itemType);
 					break;
 
 				case ItemType.SCP500:
-					Timing.RunCoroutine(Timing_OnScp500Effect(ev.Player));
+					HealthStatEx healthStat = hub.GetHealthStat() as HealthStatEx;
+
+					if (hub.playerId != Scp035id)
+						healthStat.MaxHealth = healthStat.MaxHealth2;
+
+					healthStat.ServerHeal(healthStat.MaxHealth2);
+					hub.playerEffectsController.UseMedicalItem(itemType);
+					break;
+
+				case ItemType.SCP207:
+					hub.playerEffectsController.GetEffect<Scp207>().Intensity = 1;
 					break;
 
 				case ItemType.Adrenaline:
@@ -1201,27 +1212,6 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnMedkitEffect(Player player)
-		{
-			ReferenceHub hub = GetReferenceHub(player);
-			if (hub.playerId == Scp035id)
-			{
-				if (hub.playerStats.Health + Scp035Heal > hub.playerStats.maxHP)
-					hub.playerStats.Health = hub.playerStats.maxHP;
-				else
-					hub.playerStats.Health += Scp035Heal;
-			}
-			else
-			{
-				if (hub.playerStats.Health + MedkitHeal > hub.playerStats.maxHP)
-					hub.playerStats.Health = hub.playerStats.maxHP;
-				else
-					hub.playerStats.Health += MedkitHeal;
-			}
-
-			yield break;
-		}
-
 		private IEnumerator<float> Timing_OnRecallZombie(Player player)
 		{
 			ReferenceHub hub = GetReferenceHub(player);
@@ -1381,52 +1371,6 @@ namespace CommonPlugin
 				Timing.RunCoroutine(Timing_SelfHealth(hub));
 				Timing.RunCoroutine(Timing_OnFlickerLights());
 			}
-
-			yield break;
-		}
-
-		private IEnumerator<float> Timing_OnScp500Effect(Player player)
-		{
-			ReferenceHub hub = GetReferenceHub(player);
-			switch (hub.characterClassManager.NetworkCurClass)
-			{
-				case RoleType.ClassD:
-					hub.playerStats.maxHP = ClassdMaxHP;
-					break;
-
-				case RoleType.Scientist:
-					hub.playerStats.maxHP = ScientistMaxHP;
-					break;
-
-				case RoleType.FacilityGuard:
-					hub.playerStats.maxHP = FacilityGuardHP;
-					break;
-
-				case RoleType.NtfCadet:
-					hub.playerStats.maxHP = NtfCadetHP;
-					break;
-
-				case RoleType.NtfLieutenant:
-					hub.playerStats.maxHP = NtfLieutenantHP;
-					break;
-
-				case RoleType.NtfScientist:
-					hub.playerStats.maxHP = NtfScientistHP;
-					break;
-
-				case RoleType.NtfCommander:
-					hub.playerStats.maxHP = NtfCommanderHP;
-					break;
-
-				case RoleType.ChaosInsurgency:
-					hub.playerStats.maxHP = ChaosInsurgencyHP;
-					break;
-
-				case RoleType.Tutorial:
-					hub.playerStats.maxHP = ClassdMaxHP;
-					break;
-			}
-			hub.playerStats.Health = hub.playerStats.maxHP;
 
 			yield break;
 		}
