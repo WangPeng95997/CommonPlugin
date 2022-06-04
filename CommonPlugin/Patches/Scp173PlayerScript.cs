@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(Scp939PlayerScript), "CallCmdShoot", new Type[] { typeof(GameObject) })]
-    internal static class Scp939PlayerScriptPatch
+    [HarmonyPatch(typeof(global::Scp173PlayerScript), "CallCmdHurtPlayer", new Type[] { typeof(GameObject) })]
+    internal static class Scp173PlayerScript
     {
         private static bool Prefix(GameObject target)
         {

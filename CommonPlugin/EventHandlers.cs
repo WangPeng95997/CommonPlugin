@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -21,6 +20,7 @@ using Smod2.EventHandlers;
 using Smod2.Events;
 using Smod2.EventSystem.Events;
 
+using CommonPlugin.Components;
 using CommonPlugin.Extensions;
 
 namespace CommonPlugin
@@ -49,7 +49,7 @@ namespace CommonPlugin
 
 			bScp035Detected = false;
 
-            TrapItem = new List<ushort>();
+            TrapItems = new List<ushort>();
 
 		}
 
@@ -69,7 +69,7 @@ namespace CommonPlugin
 
 			this.Coroutines = new List<CoroutineHandle>();
 
-			this.PowerCutCooldown = 45;
+			this.PowerCutCooldown = 30;
 		}
 
 
@@ -78,9 +78,9 @@ namespace CommonPlugin
 
 		public const float ScientistMaxHP = 100.0f;
 
-		public const float NtfMaxHP = 125.0f;
+		public const float MtfMaxHP = 125.0f;
 
-		public const float NtfCaptainMaxHP = 150.0f;
+		public const float MtfCaptainMaxHP = 150.0f;
 
 		public const float ChaosMaxHP = 125.0f;
 
@@ -114,6 +114,7 @@ namespace CommonPlugin
 
 		//public static int Scp939id;
 
+		public const int lateJoinTime = 90;
 
 		public static bool bScp035Detected;
 
@@ -134,7 +135,7 @@ namespace CommonPlugin
 
 		private readonly System.Random Random;
 
-		public static readonly List<ushort> TrapItem;
+		public static readonly List<ushort> TrapItems;
 
 		private readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>();
 
@@ -158,7 +159,7 @@ namespace CommonPlugin
 		// SCP-079
 		private int PowerCutCooldown;
 
-		private Scp079LevelType Scp079Level = Scp079LevelType.Level_1;
+		private Scp079Level Scp079Lv = Scp079Level.Level_1;
 
 		// SCP-096
 		
@@ -222,28 +223,25 @@ namespace CommonPlugin
 			switch (ev.Player.SCP079Data.Level)
 			{
 				case 1:
-					Scp079Level = Scp079LevelType.Level_2;
-					PowerCutCooldown = 42;
-					MeThodExtensions.FlickerLights(30.0f, 5);
+					Scp079Lv = Scp079Level.Level_2;
+					PluginMethod.FlickerLights(20, 30);
 					break;
 
 				case 2:
-					Scp079Level = Scp079LevelType.Level_3;
-					PowerCutCooldown = 39;
-					MeThodExtensions.FlickerLights(40.0f, 4);
+					Scp079Lv = Scp079Level.Level_3;
+					PluginMethod.FlickerLights(30, 40);
 					break;
 
 				case 3:
-					Scp079Level = Scp079LevelType.Level_4;
-					PowerCutCooldown = 36;
-					MeThodExtensions.FlickerLights(50.0f, 3);
+					Scp079Lv = Scp079Level.Level_4;
+					PluginMethod.FlickerLights(40, 50);
 					break;
 
 				case 4:
-					Scp079Level = Scp079LevelType.Level_5;
-					PowerCutCooldown = 33;
-					MeThodExtensions.FlickerLights(60.0f, 2);
-					MeThodExtensions.SetServerBadge(ev.Player.GetHub().serverRoles, "SCP-079");
+					Scp079Lv = Scp079Level.Level_5;
+					PowerCutCooldown = 30;
+					PluginMethod.FlickerLights(50, 60);
+					PluginMethod.SetServerBadge(ev.Player.GetHub().serverRoles, "SCP-079");
 					break;
 			}
 		}
@@ -261,7 +259,7 @@ namespace CommonPlugin
 			else if (ev.Player.PlayerID == Scp181id)
 			{
 				Scp181id = 0;
-				MeThodExtensions.ClearServerBadge(ev.Player.GetHub().serverRoles);
+				PluginMethod.ClearServerBadge(ev.Player.GetHub().serverRoles);
 			}
 		}
 
@@ -315,29 +313,29 @@ namespace CommonPlugin
 
 		public void OnDetonate()
 		{
-			TrapItem.Clear();
-			Plugin.Server.Map.OverchargeLights(900.0f, false);
+			TrapItems.Clear();
+			Plugin.Server.Map.OverchargeLights(1800.0f, false);
 		}
 
 		public void OnConsumableUse(PlayerConsumableUseEvent ev)
 		{
 			ReferenceHub hub = ev.Player.GetHub();
-			ItemType itemType = (ItemType)ev.ConsumableItem;
+			HealthStat healthStat = hub.GetHealthStat();
+			HealthController healthControler = hub.GetHealthControler();
 
+			ItemType itemType = (ItemType)ev.ConsumableItem;
 			switch (itemType)
 			{
 				case ItemType.Medkit:
-					hub.playerStats.GetModule<HealthStat>().ServerHeal(hub.playerId == Scp035id ? Scp035Heal : MedkitHeal);
+					healthStat.ServerHeal(hub.playerId == Scp035id ? Scp035Heal : MedkitHeal);
 					hub.playerEffectsController.UseMedicalItem(itemType);
 					break;
 
 				case ItemType.SCP500:
-					HealthStatEx healthStat = hub.GetHealthStat() as HealthStatEx;
-
 					if (hub.playerId != Scp035id)
-						healthStat.MaxHealth = healthStat.MaxHealth2;
+						healthControler.Start();
 
-					healthStat.ServerHeal(healthStat.MaxHealth2);
+					healthStat.ServerHeal(healthControler.MaxHealth);
 					hub.playerEffectsController.UseMedicalItem(itemType);
 					break;
 
@@ -389,7 +387,7 @@ namespace CommonPlugin
 				case RoleType.Scp079:
 					announceMessage = ScpDeathInfo("SCP-079", ev.Killer.Name);
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					MeThodExtensions.ClearServerBadge(player.serverRoles);
+					PluginMethod.ClearServerBadge(player.serverRoles);
 					return;
 
 				case RoleType.Scp096:
@@ -400,7 +398,7 @@ namespace CommonPlugin
 				case RoleType.Scp106:
 					announceMessage = ScpDeathInfo("SCP-106", ev.Killer.Name);
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					MeThodExtensions.ClearServerBadge(player.serverRoles);
+					PluginMethod.ClearServerBadge(player.serverRoles);
 					return;
 
 				case RoleType.Scp173:
@@ -634,7 +632,7 @@ namespace CommonPlugin
 				case ItemType.GrenadeHE:
 				case ItemType.GrenadeFlash:
 				case ItemType.Adrenaline:
-					if (TrapItem.Contains(ev.Item.SerialNumber))
+					if (TrapItems.Contains(ev.Item.SerialNumber))
 					{
 						ReferenceHub hub = ev.Player.GetHub();
 
@@ -656,7 +654,7 @@ namespace CommonPlugin
 
 						ev.ChangeTo = Smod2.API.ItemType.NONE;
 						ev.Item.Remove();
-						TrapItem.Remove(ev.Item.SerialNumber);
+						TrapItems.Remove(ev.Item.SerialNumber);
 
 						Timing.RunCoroutine(Timing_OnTriggerTrapItem(hub));
 					}
@@ -678,35 +676,35 @@ namespace CommonPlugin
 
 				ReferenceHub hub = ev.Player.GetHub();
 
-				HCZRoomType hczRoomType = (HCZRoomType)Random.Next((int)HCZRoomType.HczRoomCount);
+				HCZRoom hczRoomType = (HCZRoom)Random.Next((int)HCZRoom.HczRoomCount);
 
 				switch (hczRoomType)
 				{
-					case HCZRoomType.Scp049Room:
+					case HCZRoom.Scp049Room:
 						hub.playerMovementSync.OverridePosition(MapManager.Scp049Room.Position);
 						break;
 
-					case HCZRoomType.Scp079Room:
+					case HCZRoom.Scp079Room:
 						hub.playerMovementSync.OverridePosition(MapManager.Scp079Room.Position);
 						break;
 
-					case HCZRoomType.Scp096Room:
+					case HCZRoom.Scp096Room:
 						hub.playerMovementSync.OverridePosition(MapManager.Scp096Room.Position);
 						break;
 
-					case HCZRoomType.Scp106Room:
+					case HCZRoom.Scp106Room:
 						hub.playerMovementSync.OverridePosition(MapManager.Scp106Room.Position);
 						break;
 
-					case HCZRoomType.Scp939Room:
+					case HCZRoom.Scp939Room:
 						hub.playerMovementSync.OverridePosition(MapManager.Scp939Room.Position);
 						break;
 
-					case HCZRoomType.MircoHIDRoom:
+					case HCZRoom.MircoHIDRoom:
 						hub.playerMovementSync.OverridePosition(MapManager.MircohidRoom.Position);
 						break;
 
-					case HCZRoomType.ServersRoom:
+					case HCZRoom.ServersRoom:
 						hub.playerMovementSync.OverridePosition(MapManager.ServersRoom.Position);
 						break;
 				}
@@ -721,34 +719,34 @@ namespace CommonPlugin
 
 		public void OnPocketDimensionExit(PlayerPocketDimensionExitEvent ev)
 		{
-			HCZRoomType roomType = (HCZRoomType)Random.Next((int)HCZRoomType.HczRoomCount);
+			HCZRoom roomType = (HCZRoom)Random.Next((int)HCZRoom.HczRoomCount);
 			switch (roomType)
 			{
-				case HCZRoomType.Scp049Room:
+				case HCZRoom.Scp049Room:
 					ev.ExitPosition = MapManager.Scp049Room.Position2;
 					break;
 
-				case HCZRoomType.Scp079Room:
+				case HCZRoom.Scp079Room:
 					ev.ExitPosition = MapManager.Scp079Room.Position2;
 					break;
 
-				case HCZRoomType.Scp096Room:
+				case HCZRoom.Scp096Room:
 					ev.ExitPosition = MapManager.Scp096Room.Position2;
 					break;
 
-				case HCZRoomType.Scp106Room:
+				case HCZRoom.Scp106Room:
 					ev.ExitPosition = MapManager.Scp106Room.Position2;
 					break;
 
-				case HCZRoomType.Scp939Room:
+				case HCZRoom.Scp939Room:
 					ev.ExitPosition = MapManager.Scp939Room.Position2;
 					break;
 
-				case HCZRoomType.MircoHIDRoom:
+				case HCZRoom.MircoHIDRoom:
 					ev.ExitPosition = MapManager.MircohidRoom.Position2;
 					break;
 
-				case HCZRoomType.ServersRoom:
+				case HCZRoom.ServersRoom:
 					ev.ExitPosition = MapManager.ServersRoom.Position2;
 					break;
 			}
@@ -779,7 +777,7 @@ namespace CommonPlugin
 		{
 			List<Smod2.API.Item> items = new List<Smod2.API.Item>();
 			foreach (Smod2.API.Item item in ev.ItemInputs)
-				if (TrapItem.Contains(item.UniqueIdentifier))
+				if (TrapItems.Contains(item.UniqueIdentifier))
 					items.Add(item);
 			foreach (Smod2.API.Item item in items)
 				ev.ItemInputs.Remove(item);
@@ -807,11 +805,11 @@ namespace CommonPlugin
 				case RoleType.NtfPrivate:
 				case RoleType.NtfSergeant:
 				case RoleType.NtfSpecialist:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, NtfMaxHP));
+					Timing.RunCoroutine(Timing_OnSetRole(hub, MtfMaxHP));
 					break;
 
 				case RoleType.NtfCaptain:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, NtfCaptainMaxHP));
+					Timing.RunCoroutine(Timing_OnSetRole(hub, MtfCaptainMaxHP));
 					break;
 
 				case RoleType.ChaosInsurgency:
@@ -925,8 +923,8 @@ namespace CommonPlugin
 						case ItemType.Adrenaline:
 							if (Random.Next(2) == 0)
 							{
-								if (TrapItem.Contains(item.gameObject.GetInstanceID()))
-									TrapItem.Remove(item.gameObject.GetInstanceID());
+								if (TrapItems.Contains(item.gameObject.GetInstanceID()))
+									TrapItems.Remove(item.gameObject.GetInstanceID());
 								item.Delete();
 							}
 							break;
@@ -963,7 +961,7 @@ namespace CommonPlugin
 		{
 			Timing.KillCoroutines(Coroutines.ToArray());
 			Coroutines.Clear();
-			TrapItem.Clear();
+			TrapItems.Clear();
 			MapManager.GetRooms();
 			Patches.ServerRolesPatch.SetStartScreen();
 
@@ -973,7 +971,7 @@ namespace CommonPlugin
 			Scp682id = 0;
 
 			bScp035Detected = false;
-			Scp079Level = Scp079LevelType.Level_1;
+			Scp079Lv = Scp079Level.Level_1;
 			PowerCutCooldown = 50;
 			Scp106LastPlace = 0;
 			Scp703id = 0;
@@ -1151,7 +1149,7 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnAdrenalineEffect(Player player)
+		private IEnumerator<float> Timing_OnAdrenalineEffect(Smod2.API.Player player)
 		{
 			ReferenceHub hub = GetReferenceHub(player);
 			float hp = player.PlayerId == Scp035id ? 0.2f : 0.5f;
@@ -1177,26 +1175,26 @@ namespace CommonPlugin
 
 			while (!bRoundEnd && Scp079id != 0)
 			{
-				switch (Scp079Level)
+				switch (Scp079Lv)
 				{
-					case Scp079LevelType.Level_1:
-						MeThodExtensions.FlickerLights(33.0f);
+					case Scp079Level.Level_1:
+						PluginMethod.FlickerLights(12, 24);
 						break;
 
-					case Scp079LevelType.Level_2:
-						MeThodExtensions.FlickerLights(36.0f);
+					case Scp079Level.Level_2:
+						PluginMethod.FlickerLights(16, 30);
 						break;
 
-					case Scp079LevelType.Level_3:
-						MeThodExtensions.FlickerLights(39.0f);
+					case Scp079Level.Level_3:
+						PluginMethod.FlickerLights(20, 36);
 						break;
 
-					case Scp079LevelType.Level_4:
-						MeThodExtensions.FlickerLights(42.0f);
+					case Scp079Level.Level_4:
+						PluginMethod.FlickerLights(24, 42);
 						break;
 
-					case Scp079LevelType.Level_5:
-						MeThodExtensions.FlickerLights(45.0f);
+					case Scp079Level.Level_5:
+						PluginMethod.FlickerLights(28, 48);
 						break;
 				}
 
@@ -1212,7 +1210,7 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnRecallZombie(Player player)
+		private IEnumerator<float> Timing_OnRecallZombie(Smod2.API.Player player)
 		{
 			ReferenceHub hub = GetReferenceHub(player);
 			hub.playerStats.maxHP = Scp0492MaxHP;
@@ -1223,7 +1221,7 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnRoundStart()
 		{
-			Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
+            InventorySystem.Inventory itemSpawner = GameObject.Find("Host").GetComponent<InventorySystem.Inventory>();
 			GameObject ragdoll = PlayerManager.localPlayer;
 			ReferenceHub hub = ReferenceHub.GetHub(ragdoll);
 			Role role = hub.characterClassManager.Classes.SafeGet((int)RoleType.ClassD);
@@ -1321,7 +1319,7 @@ namespace CommonPlugin
 
 			// 选取所有的D级人员
 			int index = 0;
-			List<Player> Players = Plugin.Server.GetPlayers(Smod2.API.RoleType.CLASSD);
+            List<Smod2.API.Player> Players = Plugin.Server.GetPlayers(Smod2.API.RoleType.CLASSD);
 
 			// 创建SCP-181
 			if (Players.Count > 3)
@@ -1377,7 +1375,7 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnScp703Activate(Vector3 vector3)
         {
-			Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
+            InventorySystem.Inventory itemSpawner = GameObject.Find("Host").GetComponent<InventorySystem.Inventory>();
 
 			while (!bRoundEnd && bScp703Activating)
 			{
@@ -1403,11 +1401,11 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnScp914Activate(List<Player> players)
+		private IEnumerator<float> Timing_OnScp914Activate(List<Smod2.API.Player> players)
 		{
-			foreach (Player ply in players)
+			foreach (Smod2.API.Player ply in players)
 			{
-				ReferenceHub hub = GetReferenceHub(ply);
+                ReferenceHub hub = GetReferenceHub(ply);
 				switch (Scp914Machine.singleton.knobState)
 				{
 					case Scp914Knob.Rough:
@@ -1982,7 +1980,7 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnPainkillersEffect(Player player)
+		private IEnumerator<float> Timing_OnPainkillersEffect(Smod2.API.Player player)
         {
 			ReferenceHub hub = GetReferenceHub(player);
 			for (int i = 0; i < 40; i++)
@@ -2016,7 +2014,7 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_PersonMessage(PersonMessage personMessage, Player player)
+		private IEnumerator<float> Timing_PersonMessage(PersonMessage personMessage, Smod2.API.Player player)
 		{
 			string strText;
 			personMessage.TextDisplay.Add(new Message(

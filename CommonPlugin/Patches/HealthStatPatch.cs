@@ -1,24 +1,23 @@
 ﻿using PlayerStatsSystem;
 using HarmonyLib;
-
-using CommonPlugin.Extensions;
+using CommonPlugin.Components;
 
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(HealthStat), "MaxValue", MethodType.Getter)]
     internal static class MaxValuePatch
     {
-        private static float ClassD = EventHandlers.ClassdMaxHP;
+        private const float ClassD = EventHandlers.ClassdMaxHP;
 
-        private static float Scientist = EventHandlers.ScientistMaxHP;
+        private const float Scientist = EventHandlers.ScientistMaxHP;
 
-        private static float Ntf = EventHandlers.NtfMaxHP;
+        private const float Ntf = EventHandlers.MtfMaxHP;
 
-        private static float NtfCaptain = EventHandlers.NtfCaptainMaxHP;
+        private const float NtfCaptain = EventHandlers.MtfCaptainMaxHP;
 
-        private static float Chaos = EventHandlers.ChaosMaxHP;
+        private const float Chaos = EventHandlers.ChaosMaxHP;
 
-        private static float ChaosRepressor = EventHandlers.ChaosRepressorMaxHP;
+        private const float ChaosRepressor = EventHandlers.ChaosRepressorMaxHP;
 
         private static bool Prefix(HealthStat __instance, ref float __result)
         {
@@ -73,12 +72,12 @@ namespace CommonPlugin.Patches
     {
         private static bool Prefix(HealthStat __instance, float healAmount)
         {
-            HealthStatEx healthStat = __instance as HealthStatEx;
+            HealthController healthControler = __instance.Hub.gameObject.GetComponent<HealthController>();
 
-            if (healthStat.Health + healAmount > healthStat.MaxHealth)
-                healthStat.Health = healthStat.MaxHealth;
+            if (healthControler.Health + healAmount > healthControler.MaxHealth)
+                healthControler.Health = healthControler.MaxHealth;
             else
-                healthStat.Health += healAmount;
+                healthControler.Health += healAmount;
 
             return false;
         }

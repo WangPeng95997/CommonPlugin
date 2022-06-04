@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace CommonPlugin.Extensions
 {
-    public class MeThodExtensions
+    public class PluginMethod
 	{
 		private static System.Random Random = new System.Random();
 
@@ -30,7 +30,7 @@ namespace CommonPlugin.Extensions
 			RoleType roleType = RoleType.None;
 
 			foreach (GameObject gameObject in PlayerManager.players)
-				switch (ReferenceHub.GetHub(gameObject).characterClassManager.NetworkCurClass)
+				switch (global::ReferenceHub.GetHub(gameObject).characterClassManager.NetworkCurClass)
 				{
 					case RoleType.Scp049:
 						bScp049 = true;
@@ -51,10 +51,10 @@ namespace CommonPlugin.Extensions
 
 			while (!bRandomEnd)
 			{
-				RandomScpType randomScp = (RandomScpType)Random.Next((int)RandomScpType.RandomScpCount);
+				RandomScp randomScp = (RandomScp)Random.Next((int)RandomScp.RandomScpCount);
 				switch (randomScp)
 				{
-					case RandomScpType.Scp049:
+					case RandomScp.Scp049:
 						if (!bScp049)
 						{
 							bRandomEnd = true;
@@ -62,7 +62,7 @@ namespace CommonPlugin.Extensions
 						}
 						break;
 
-					case RandomScpType.Scp096:
+					case RandomScp.Scp096:
 						if (!bScp096)
 						{
 							bRandomEnd = true;
@@ -70,7 +70,7 @@ namespace CommonPlugin.Extensions
 						}
 						break;
 
-					case RandomScpType.Scp106:
+					case RandomScp.Scp106:
 						if (!bScp106)
 						{
 							bRandomEnd = true;
@@ -78,7 +78,7 @@ namespace CommonPlugin.Extensions
 						}
 						break;
 
-					case RandomScpType.Scp173:
+					case RandomScp.Scp173:
 						if (!bScp173)
 						{
 							bRandomEnd = true;
@@ -86,7 +86,7 @@ namespace CommonPlugin.Extensions
 						}
 						break;
 
-					case RandomScpType.Scp939:
+					case RandomScp.Scp939:
 						bRandomEnd = true;
 
 						if (Random.Next(2) == 0)
@@ -159,70 +159,70 @@ namespace CommonPlugin.Extensions
 			return itemPickupBase;
 		}
 
-		public static void FlickerLights(float duration, int random = 5)
+		public static void FlickerLights(int minValue, int maxValue)
 		{
 			foreach (FlickerableLightController fc in Object.FindObjectsOfType<FlickerableLightController>())
-				if (Random.Next(random) == 0)
-					fc.ServerFlickerLights(duration);
+				if (Random.Next(5) == 0)
+					fc.ServerFlickerLights(Random.Next(1));
 		}
 
 		public static void PlaceTrapItem(Vector3 position)
         {
 			ItemType itemType = ItemType.None;
-			TrapItemType trapItemType = (TrapItemType)Random.Next((int)TrapItemType.TrapItemCount);
+			TrapItem trapItemType = (TrapItem)Random.Next((int)TrapItem.TrapItemCount);
 
 			switch (trapItemType)
 			{
-				case TrapItemType.Adrenaline:
+				case TrapItem.Adrenaline:
 					itemType = ItemType.Adrenaline;
 					break;
 
-				case TrapItemType.GrenadeFlash:
+				case TrapItem.GrenadeFlash:
 					itemType = ItemType.GrenadeFlash;
 					break;
 
-				case TrapItemType.GrenadeFrag:
+				case TrapItem.GrenadeFrag:
 					itemType = ItemType.GrenadeHE;
 					break;
 
-				case TrapItemType.KeycardContainmentEngineer:
+				case TrapItem.KeycardContainmentEngineer:
 					itemType = ItemType.KeycardContainmentEngineer;
 					break;
 
-				case TrapItemType.KeycardFacilityManager:
+				case TrapItem.KeycardFacilityManager:
 					itemType = ItemType.KeycardFacilityManager;
 					break;
 
-				case TrapItemType.KeycardO5:
+				case TrapItem.KeycardO5:
 					itemType = ItemType.KeycardO5;
 					break;
 
-				case TrapItemType.Medkit:
+				case TrapItem.Medkit:
 					itemType = ItemType.Medkit;
 					break;
 
-				case TrapItemType.SCP207:
+				case TrapItem.SCP207:
 					itemType = ItemType.SCP207;
 					break;
 
-				case TrapItemType.SCP268:
+				case TrapItem.SCP268:
 					itemType = ItemType.SCP268;
 					break;
 
-				case TrapItemType.SCP500:
+				case TrapItem.SCP500:
 					itemType = ItemType.SCP500;
 					break;
 
-				case TrapItemType.SCP1853:
+				case TrapItem.SCP1853:
 					itemType = ItemType.SCP1853;
 					break;
 			}
 
 			ItemPickupBase itemPickupBase = SpawnItem(itemType, new Vector3(position.x, position.y, position.z) + Vector3.up, Quaternion.Euler(Vector3.zero));
-			EventHandlers.TrapItem.Add(itemPickupBase.NetworkInfo.Serial);
+			EventHandlers.TrapItems.Add(itemPickupBase.NetworkInfo.Serial);
 		}
 
-		public static void SetScp035(ReferenceHub hub)
+		public static void SetScp035(global::ReferenceHub hub)
 		{
 			EventHandlers.Scp035id = hub.playerId;
 			hub.GetAhpProcess().Limit = 35.0f;
@@ -232,7 +232,7 @@ namespace CommonPlugin.Extensions
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 		}
 
-		public static void SetScp181(ReferenceHub hub)
+		public static void SetScp181(global::ReferenceHub hub)
 		{
 			/*
 			SetScpBadge(hub.serverRoles, "SCP-181");
@@ -252,7 +252,7 @@ namespace CommonPlugin.Extensions
 			*/
 		}
 
-		public static void SetScp682(ReferenceHub hub)
+		public static void SetScp682(global::ReferenceHub hub)
 		{
 			/*
 			Scp682id = hub.playerId;

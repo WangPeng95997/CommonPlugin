@@ -24,9 +24,11 @@ namespace CommonPlugin.Patches
     {
         private static Round Round = PluginManager.Manager.Server.Round;
 
+        private const int lateJoinTime = EventHandlers.lateJoinTime;
+
         private static bool Prefix(CharacterClassManager __instance)
         {
-            bool bSpawnClass = Round.Duration < 90;
+            bool bSpawnClass = Round.Duration < lateJoinTime;
             if (bSpawnClass)
                 __instance.SetPlayersClass(RoleType.ClassD, __instance.gameObject, CharacterClassManager.SpawnReason.LateJoin);
 

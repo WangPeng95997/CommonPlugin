@@ -3,8 +3,8 @@ using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(Scp106PlayerScript), "UserCode_CmdMovePlayer", typeof(GameObject), typeof(int))]
-    internal static class Scp106PlayerScriptPatch
+    [HarmonyPatch(typeof(global::Scp106PlayerScript), "UserCode_CmdMovePlayer", typeof(GameObject), typeof(int))]
+    internal static class Scp106PlayerScript
     {
         private static bool Prefix(GameObject ply, int t)
         {

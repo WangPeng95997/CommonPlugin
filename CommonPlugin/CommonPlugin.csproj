@@ -79,12 +79,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\HealthStatExtensions.cs" />
-    <Compile Include="Extensions\InventoryExtensions.cs" />
-    <Compile Include="Extensions\PlayerExtensions.cs" />
-    <Compile Include="Extensions\MethodExtensions.cs" />
-    <Compile Include="Extensions\ReferenceHubExtensions.cs" />
-    <Compile Include="Extensions\Scp106PlayerScriptExtensions.cs" />
+    <Compile Include="Components\HealthController.cs" />
+    <Compile Include="Extensions\Inventory.cs" />
+    <Compile Include="Extensions\Player.cs" />
+    <Compile Include="Extensions\PluginMethod.cs" />
+    <Compile Include="Extensions\ReferenceHub.cs" />
+    <Compile Include="Extensions\Scp106PlayerScript.cs" />
     <Compile Include="Patches\HealthStatPatch.cs" />
     <Compile Include="Patches\InventoryPatch.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
@@ -99,20 +99,20 @@
     <Compile Include="MessageQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patches\RagdollPatch.cs" />
-    <Compile Include="Patches\SCP035PlayerScriptPatch.cs" />
-    <Compile Include="Patches\Scp049PlayerScriptPatch.cs" />
-    <Compile Include="Patches\Scp079PlayerScriptPatch.cs" />
-    <Compile Include="Patches\SCP096PlayerScriptPatch.cs" />
-    <Compile Include="Patches\Scp106PlayerScriptPatch.cs" />
-    <Compile Include="Patches\Scp173PlayerScriptPatch.cs" />
-    <Compile Include="Patches\Scp682PlayerScriptPatch.cs" />
-    <Compile Include="Patches\Scp939PlayerScriptPatch.cs" />
+    <Compile Include="Patches\SCP035PlayerScript.cs" />
+    <Compile Include="Patches\Scp049PlayerScript.cs" />
+    <Compile Include="Patches\Scp079PlayerScript.cs" />
+    <Compile Include="Patches\SCP096PlayerScript.cs" />
+    <Compile Include="Patches\Scp106PlayerScript.cs" />
+    <Compile Include="Patches\Scp173PlayerScript.cs" />
+    <Compile Include="Patches\Scp682PlayerScript.cs" />
+    <Compile Include="Patches\Scp939PlayerScript.cs" />
     <Compile Include="Patches\SinkholeEnvironmentalHazardPatch.cs" />
     <Compile Include="MapManager.cs" />
-    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Extensions\Type.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Command\" />
+    <Folder Include="Commands\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

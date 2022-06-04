@@ -14,7 +14,7 @@ using NorthwoodLib.Pools;
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(UsableItemsController), "ServerReceivedStatus")]
-    internal static class UsableItemsControllerPatch
+    internal static class ServerReceivedStatusPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {

@@ -7,7 +7,7 @@ using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(Inventory), "UserCode_CmdProcessHotkey", typeof(ActionName), typeof(ushort))]
+    [HarmonyPatch(typeof(InventorySystem.Inventory), "UserCode_CmdProcessHotkey", typeof(ActionName), typeof(ushort))]
     internal static class CmdProcessHotkeyPatch
     {
 		private static Plugin Plugin = PluginManager.Manager.Plugins[0];
@@ -16,7 +16,7 @@ namespace CommonPlugin.Patches
 
 		private const int Cooldown = EventHandlers.Scp106Cooldown;
 
-		private static bool Prefix(Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)
+		private static bool Prefix(InventorySystem.Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)
         {
 			ReferenceHub hub = ReferenceHub.GetHub(__instance.gameObject);
 
@@ -29,7 +29,7 @@ namespace CommonPlugin.Patches
 
 				if (duration > Cooldown)
 				{
-					MeThodExtensions.PlaceTrapItem(hub.transform.position);
+					PluginMethod.PlaceTrapItem(hub.transform.position);
 
 					EventHandlers.Scp106LastPlace = Plugin.Server.Round.Duration;
 					hub.hints.Show(

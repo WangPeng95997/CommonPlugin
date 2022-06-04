@@ -1,6 +1,6 @@
 ﻿namespace CommonPlugin.Extensions
 {
-	public enum CustomScpType
+	public enum CustomScp
 	{
 		Scp035,
 		Scp181,
@@ -9,7 +9,7 @@
 		CustomScpCount
 	}
 
-	public enum LCZRoomType
+	public enum LCZRoom
 	{
 		Scp012Room,
 		Scp173Room,
@@ -22,7 +22,7 @@
 		LczRoomCount
 	}
 
-	public enum HCZRoomType
+	public enum HCZRoom
 	{
 		Scp049Room,
 		Scp079Room,
@@ -34,7 +34,7 @@
 		HczRoomCount
 	}
 
-	public enum RandomScpType
+	public enum RandomScp
 	{
 		Scp049,
 		Scp096,
@@ -44,7 +44,7 @@
 		RandomScpCount
 	}
 
-	public enum Scp079LevelType
+	public enum Scp079Level
 	{
 		Level_1,
 		Level_2,
@@ -53,7 +53,7 @@
 		Level_5,
 	}
 
-	public enum TrapItemType
+	public enum TrapItem
 	{
 		Adrenaline,
 		GrenadeFlash,
