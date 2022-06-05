@@ -8,16 +8,18 @@ namespace CommonPlugin.Patches
     internal static class MaxValuePatch
     {
         private const float ClassD = EventHandlers.ClassdMaxHP;
-
         private const float Scientist = EventHandlers.ScientistMaxHP;
-
-        private const float Ntf = EventHandlers.MtfMaxHP;
-
-        private const float NtfCaptain = EventHandlers.MtfCaptainMaxHP;
-
+        private const float Mtf = EventHandlers.MtfMaxHP;
+        private const float MtfCaptain = EventHandlers.MtfCaptainMaxHP;
         private const float Chaos = EventHandlers.ChaosMaxHP;
-
         private const float ChaosRepressor = EventHandlers.ChaosRepressorMaxHP;
+        private const float Scp049 = EventHandlers.Scp049MaxHP;
+        private const float Scp0492 = EventHandlers.Scp0492MaxHP;
+        private const float Scp079 = EventHandlers.Scp079MaxHP;
+        private const float Scp096 = EventHandlers.Scp096MaxHP;
+        private const float Scp106 = EventHandlers.Scp106MaxHP;
+        private const float Scp173 = EventHandlers.Scp173MaxHP;
+        private const float Scp939 = EventHandlers.Scp939MaxHP;
 
         private static bool Prefix(HealthStat __instance, ref float __result)
         {
@@ -37,11 +39,11 @@ namespace CommonPlugin.Patches
                 case RoleType.NtfPrivate:
                 case RoleType.NtfSergeant:
                 case RoleType.NtfSpecialist:
-                    __result = Ntf;
+                    __result = Mtf;
                     break;
 
                 case RoleType.NtfCaptain:
-                    __result = NtfCaptain;
+                    __result = MtfCaptain;
                     break;
 
                 case RoleType.ChaosConscript:
@@ -54,8 +56,33 @@ namespace CommonPlugin.Patches
                     __result = ChaosRepressor;
                     break;
 
-                case RoleType.Scp079:
+                case RoleType.Scp049:
+                    __result = Scp049;
+                    break;
 
+                case RoleType.Scp0492:
+                    __result = Scp0492;
+                    break;
+
+                case RoleType.Scp079:
+                    __result = Scp079;
+                    break;
+
+                case RoleType.Scp096:
+                    __result = Scp096;
+                    break;
+
+                case RoleType.Scp106:
+                    __result = Scp106;
+                    break;
+
+                case RoleType.Scp173:
+                    __result = Scp173;
+                    break;
+
+                case RoleType.Scp93953:
+                case RoleType.Scp93989:
+                    __result = Scp939;
                     break;
 
                 default:

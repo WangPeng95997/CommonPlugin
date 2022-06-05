@@ -80,11 +80,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\HealthController.cs" />
-    <Compile Include="Extensions\InventoryEx.cs" />
-    <Compile Include="Extensions\PlayerEx.cs" />
+    <Compile Include="Extensions\InventoryExtension.cs" />
+    <Compile Include="Extensions\PlayerExtension.cs" />
     <Compile Include="Extensions\PluginEx.cs" />
-    <Compile Include="Extensions\ReferenceHubEx.cs" />
-    <Compile Include="Extensions\Scp106PlayerScript.cs" />
+    <Compile Include="Extensions\ReferenceHubExtension.cs" />
+    <Compile Include="Extensions\Scp106PlayerScriptExtension.cs" />
     <Compile Include="Patches\HealthStatPatch.cs" />
     <Compile Include="Patches\InventoryPatch.cs" />
     <Compile Include="Patches\RadioPatch.cs" />

@@ -28,11 +28,12 @@ namespace CommonPlugin.Components
 
         private void Awake()
         {
-            this.healthStat = ReferenceHub.GetHub(this.gameObject).playerStats.GetModule<HealthStat>();
+
         }
 
         public void Start()
         {
+            this.healthStat = ReferenceHub.GetHub(this.gameObject).playerStats.GetModule<HealthStat>();
             this.MaxHealth = this.MaxHealth2;
         }
 
