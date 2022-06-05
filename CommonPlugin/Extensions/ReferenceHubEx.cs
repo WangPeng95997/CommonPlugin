@@ -6,7 +6,7 @@ using CommonPlugin.Components;
 
 namespace CommonPlugin.Extensions
 {
-    public static class ReferenceHub
+    public static class ReferenceHubEx
     {
         private static FieldInfo fieldInfo = typeof(AhpStat).GetField("_activeProcesses", BindingFlags.Instance | BindingFlags.NonPublic);
 

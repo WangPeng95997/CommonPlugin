@@ -2,7 +2,7 @@
 
 namespace CommonPlugin.Extensions
 {
-    public static class Player
+    public static class PlayerEx
     {
         public static GameObject GameObject(this Smod2.API.Player player) => player.GetGameObject() as GameObject;
 

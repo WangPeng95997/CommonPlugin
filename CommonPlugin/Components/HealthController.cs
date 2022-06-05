@@ -21,7 +21,7 @@ namespace CommonPlugin.Components
             set => this.maxHealth = value;
         }
 
-        private float MaxHealth2
+        public float MaxHealth2
         {
             get => this.healthStat.MaxValue;
         }

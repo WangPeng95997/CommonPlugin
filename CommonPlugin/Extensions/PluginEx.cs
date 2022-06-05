@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace CommonPlugin.Extensions
 {
-    public class PluginMethod
+    public class PluginEx
 	{
 		private static System.Random Random = new System.Random();
 

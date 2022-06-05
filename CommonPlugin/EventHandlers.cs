@@ -187,7 +187,7 @@ namespace CommonPlugin
 
 		private readonly float Heal173 = 7.5f;
 
-		private readonly float Hurt173 = 0.67f;
+		private readonly float Scp173Hit = 0.67f;
 
 		// SCP-682
 		private const int Scp682MaxHP = 4000;
@@ -202,13 +202,13 @@ namespace CommonPlugin
 		// SCP-939
 		public readonly int Scp939MaxHP = 3000;
 
-		public readonly int Scp939MaxHP2 = 3300;
-
 		private readonly float healScp939_1 = 1.0f;
 
 		private readonly float healScp939_2 = 6.0f;
 
 		private readonly float lifeStealScp939 = 25.0f;
+
+		private const float Scp939Hit = 25.0f;
 
 
 		// Private Custom Method
@@ -224,24 +224,24 @@ namespace CommonPlugin
 			{
 				case 1:
 					Scp079Lv = Scp079Level.Level_2;
-					PluginMethod.FlickerLights(20, 30);
+					PluginEx.FlickerLights(20, 30);
 					break;
 
 				case 2:
 					Scp079Lv = Scp079Level.Level_3;
-					PluginMethod.FlickerLights(30, 40);
+					PluginEx.FlickerLights(30, 40);
 					break;
 
 				case 3:
 					Scp079Lv = Scp079Level.Level_4;
-					PluginMethod.FlickerLights(40, 50);
+					PluginEx.FlickerLights(40, 50);
 					break;
 
 				case 4:
 					Scp079Lv = Scp079Level.Level_5;
 					PowerCutCooldown = 30;
-					PluginMethod.FlickerLights(50, 60);
-					PluginMethod.SetServerBadge(ev.Player.GetHub().serverRoles, "SCP-079");
+					PluginEx.FlickerLights(50, 60);
+					PluginEx.SetServerBadge(ev.Player.GetHub().serverRoles, "SCP-079");
 					break;
 			}
 		}
@@ -259,7 +259,7 @@ namespace CommonPlugin
 			else if (ev.Player.PlayerID == Scp181id)
 			{
 				Scp181id = 0;
-				PluginMethod.ClearServerBadge(ev.Player.GetHub().serverRoles);
+				PluginEx.ClearServerBadge(ev.Player.GetHub().serverRoles);
 			}
 		}
 
@@ -344,16 +344,12 @@ namespace CommonPlugin
 					break;
 
 				case ItemType.Adrenaline:
-					if (ev.Player.PlayerId == Scp035id)
-						ev.AmountArtificial = 20;
-					else
-						ev.AmountArtificial = 40;
-					Timing.RunCoroutine(Timing_OnAdrenalineEffect(ev.Player));
+				case ItemType.Painkillers:
+					Timing.RunCoroutine(Timing_OnConsumableUse(hub, healthControler, itemType, hub.characterClassManager.NetworkCurClass));
 					break;
 
-				case ItemType.Painkillers:
-					ev.AmountArtificial = 5;
-					Timing.RunCoroutine(Timing_OnPainkillersEffect(ev.Player));
+				case ItemType.SCP1853:
+					hub.playerEffectsController.GetEffect<Scp1853>().Intensity += 1;
 					break;
 			}
 		}
@@ -366,12 +362,10 @@ namespace CommonPlugin
 
 		public void OnPlayerDie(PlayerDeathEvent ev)
 		{
-			if (ev.DamageTypeVar == DamageType.NONE)
+			if (GameCore.RoundStart.singleton.NetworkTimer != -1 || ev.DamageTypeVar == DamageType.NONE)
 				return;
 
-			double dDeath;
-			while ((dDeath = Random.NextDouble()) > 0.432) { }
-			dWarheadRate += dDeath + 0.345;
+			dWarheadRate += Random.NextDouble() + 0.345;
 
 			ReferenceHub killer = ev.Killer.GetHub();
 			ReferenceHub player = ev.Player.GetHub();
@@ -380,58 +374,19 @@ namespace CommonPlugin
 			switch (player.characterClassManager.NetworkCurClass)
 			{
 				case RoleType.Scp049:
-					announceMessage = ScpDeathInfo("SCP-049", ev.Killer.Name);
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					return;
-
 				case RoleType.Scp079:
-					announceMessage = ScpDeathInfo("SCP-079", ev.Killer.Name);
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					PluginMethod.ClearServerBadge(player.serverRoles);
-					return;
-
 				case RoleType.Scp096:
-					announceMessage = ScpDeathInfo("SCP-096", ev.Killer.Name);
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					return;
-
 				case RoleType.Scp106:
-					announceMessage = ScpDeathInfo("SCP-106", ev.Killer.Name);
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					PluginMethod.ClearServerBadge(player.serverRoles);
-					return;
-
 				case RoleType.Scp173:
-					announceMessage = ScpDeathInfo("SCP-173", ev.Killer.Name);
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					return;
-
 				case RoleType.Scp93953:
-					if (ev.Player.PlayerID == Scp682id)
-					{
-						Scp682id = 0;
-						announceMessage = ScpDeathInfo("SCP-682", ev.Killer.Name);
-					}
-					else
-						announceMessage = ScpDeathInfo("SCP-939-53", ev.Killer.Name);
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
-					return;
-
 				case RoleType.Scp93989:
-					if (ev.Player.PlayerId == Scp682id)
-					{
-						Scp682id = 0;
-						announceMessage = ScpDeathInfo("SCP-682", ev.Killer.Name);
-					}
-					else
-						announceMessage = ScpDeathInfo("SCP-939-89", ev.Killer.Name);
-					player.playerStats.artificialHpDecay = 0.75f;
-					Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, announceMessage, 10));
+					PluginEx.ClearServerBadge(player.serverRoles);
 					return;
 
 				default:
 					if (player.playerId == Scp035id)
 					{
+						// TODO
 						Scp035id = 0;
 						player.playerStats.NetworkmaxArtificialHealth = 75;
 						ClearScpBadge(player.serverRoles);
@@ -442,6 +397,7 @@ namespace CommonPlugin
 					}
 					else if (player.playerId == Scp181id)
 					{
+						// TODO
 						Scp181id = 0;
 						ClearScpBadge(player.serverRoles);
 						announceMessage = ScpDeathInfo("SCP-181", ev.Killer.Name);
@@ -460,18 +416,14 @@ namespace CommonPlugin
 					if (!bScp035Detected)
 					{
 						bScp035Detected = true;
-						SetScpBadge(killer.serverRoles, "SCP-035");
+						PluginEx.SetServerBadge(killer.serverRoles, "SCP-035");
+
+						// TODO
 						Timing.RunCoroutine(Timing_SendMessage(MessageType.All, 0, "警告: <color=#FF0000>SCP-035</color>已出现", 10));
 						RespawnEffectsController.PlayCassieAnnouncement("WARNING SCP 0 3 5 CONTAINMENT BREACH", false, true);
 					}
 					return;
 				}
-
-				if (killer.characterClassManager.NetworkCurClass == RoleType.Scp106)
-					if (killer.playerStats.Health + Scp106Heal < killer.playerStats.maxHP)
-						killer.playerStats.Health += Scp106Heal;
-					else
-						killer.playerStats.Health = killer.playerStats.maxHP;
 			}
 
 			if (ev.DamageTypeVar == DamageType.POCKET_DECAY)
@@ -482,12 +434,13 @@ namespace CommonPlugin
 		{
 			if (ev.Attacker.PlayerID != ev.Player.PlayerID)
 			{
-				ReferenceHub attackerhub = GetReferenceHub(ev.Attacker);
-				ReferenceHub playerhub = GetReferenceHub(ev.Player);
+				ReferenceHub attacker = ev.Attacker.GetHub();
+				ReferenceHub player = ev.Player.GetHub();
+				HealthController healthController = player.GetHealthControler();
 
-				if (attackerhub.playerId == Scp035id)
+				if (attacker.playerId == Scp035id)
 				{
-					switch (playerhub.characterClassManager.NetworkCurClass)
+					switch (player.characterClassManager.NetworkCurClass)
 					{
 						case RoleType.Scp049:
 						case RoleType.Scp0492:
@@ -501,27 +454,31 @@ namespace CommonPlugin
 					}
 				}
 
-				if (playerhub.characterClassManager.NetworkCurClass == RoleType.Scp173)
+				if (player.characterClassManager.NetworkCurClass == RoleType.Scp173)
 				{
-					ev.Damage *= Hurt173;
+					ev.Damage *= Scp173Hit;
 					return;
 				}
 
-				if (playerhub.playerId == Scp035id)
+				if (player.playerId == Scp035id)
 				{
 					switch (ev.DamageType)
 					{
 						case DamageType.COM15:
-						case DamageType.P90:
-						case DamageType.E11_STANDARD_RIFLE:
-						case DamageType.MP7:
-						case DamageType.LOGICIER:
-						case DamageType.USP:
+						case DamageType.E11_SR:
+						case DamageType.CROSSVEC:
+						case DamageType.FSP9:
+						case DamageType.LOGICER:
+						case DamageType.COM18:
+						case DamageType.REVOLVER:
+						case DamageType.AK:
+						case DamageType.SHOTGUN:
 							ev.Damage = (ev.Damage > 40.0f) ? Scp035Hit * 4 : Scp035Hit;
+							healthController.MaxHealth -= 1.0f;
 							return;
 					}
 
-					switch (attackerhub.characterClassManager.NetworkCurClass)
+					switch (attacker.characterClassManager.NetworkCurClass)
 					{
 						case RoleType.Scp049:
 						case RoleType.Scp0492:
@@ -534,9 +491,9 @@ namespace CommonPlugin
 							return;
 					}
 				}
-				else if (playerhub.playerId == Scp181id)
+				else if (player.playerId == Scp181id)
 				{
-					switch (attackerhub.characterClassManager.NetworkCurClass)
+					switch (attacker.characterClassManager.NetworkCurClass)
 					{
 						case RoleType.Scp049:
 						case RoleType.Scp0492:
@@ -545,14 +502,19 @@ namespace CommonPlugin
 						case RoleType.Scp173:
 						case RoleType.Scp93953:
 						case RoleType.Scp93989:
-							if (playerhub.inventory.items.Count > 0)
+							int itemCount = player.inventory.UserInventory.Items.Count;
+
+							if (itemCount > 0)
 							{
 								ev.Damage = 0.0f;
-								playerhub.inventory.items.RemoveAt(Random.Next(playerhub.inventory.items.Count));
-								playerhub.hints.Show(
+
+								ushort itemSerial = player.inventory.UserInventory.Items.ElementAt(Random.Next(itemCount)).Key;
+								player.inventory.ServerRemoveItem(itemSerial, null);
+
+								player.hints.Show(
 									new TextHint("<b>你使用一件物品抵挡了一次来自<color=#FF0000>SCP</color>的伤害</b>",
 									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
-								attackerhub.hints.Show(
+								attacker.hints.Show(
 									new TextHint("<b><color=#FF0000>SCP-181</color>使用一件物品抵挡了你的一次伤害</b>",
 									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								return;
@@ -561,37 +523,19 @@ namespace CommonPlugin
 					}
 				}
 
-				switch (attackerhub.characterClassManager.NetworkCurClass)
+				switch (attacker.characterClassManager.NetworkCurClass)
 				{
 					case RoleType.Scp93953:
 					case RoleType.Scp93989:
-						if (playerhub.playerId != Scp181id)
-							playerhub.GetComponent<PlayerEffectsController>().EnableEffect<Blinded>(5.0f, true);
-
-						if (attackerhub.playerId == Scp682id)
+						if (attacker.playerId == Scp682id)
 						{
-							ev.Damage = 120.0f;
-							int damage = playerhub.playerStats.maxHP - (int)(playerhub.playerStats.maxHP * 0.65);
-							playerhub.playerStats.maxHP -= damage;
-							playerhub.hints.Show(new TextHint($"<b><color=#FF0000>SCP-682</color> 给你造成了重伤效果 ( 减少 <color=#FF0000>{damage}</color> 点最大生命值 )</b>",
-									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
-
-							if (attackerhub.playerStats.Health + lifeSteal682 < attackerhub.playerStats.maxHP)
-								attackerhub.playerStats.Health += lifeSteal682;
-							else
-								attackerhub.playerStats.Health = attackerhub.playerStats.maxHP;
+							ev.Damage = 100.0f;
+							healthController.MaxHealth -= healthController.MaxHealth2 * 0.3f;
 						}
 						else
 						{
 							ev.Damage = Random.Next(70, 100);
-							playerhub.playerStats.maxHP -= (int)lifeStealScp939;
-							playerhub.hints.Show(new TextHint($"<b><color=#FF0000>SCP-939</color> 给你造成了裂伤效果 ( 减少 <color=#FF0000>{lifeStealScp939}</color> 点最大生命值 )</b>",
-									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
-
-							if (attackerhub.playerStats.Health + lifeStealScp939 < attackerhub.playerStats.maxHP)
-								attackerhub.playerStats.Health += lifeStealScp939;
-							else
-								attackerhub.playerStats.Health = attackerhub.playerStats.maxHP;
+							healthController.MaxHealth -= Scp939Hit;
 						}
 						break;
 				}
@@ -600,21 +544,21 @@ namespace CommonPlugin
 
 		public void OnPlayerJoin(PlayerJoinEvent ev)
 		{
-			if (MessageQueue.Messages.ContainsKey(ev.Player.PlayerId))
+			if (MessageQueue.Messages.ContainsKey(ev.Player.PlayerID))
 				return;
 
-			PersonMessage personMessage = new PersonMessage(ev.Player.PlayerId, GetReferenceHub(ev.Player));
-			MessageQueue.Messages.Add(ev.Player.PlayerId, personMessage);
-			Coroutines.Add(Timing.RunCoroutine(Timing_PersonMessage(personMessage, ev.Player), "M" + ev.Player.PlayerId));
+			PersonMessage personMessage = new PersonMessage(ev.Player.PlayerID, ev.Player.GetHub());
+			MessageQueue.Messages.Add(ev.Player.PlayerID, personMessage);
+			Coroutines.Add(Timing.RunCoroutine(Timing_PersonMessage(personMessage, ev.Player), "Mq" + ev.Player.PlayerID));
 		}
 
 		public void OnPlayerLeave(PlayerLeaveEvent ev)
 		{
-			GetReferenceHub(ev.Player).characterClassManager.NetworkCurClass = RoleType.Spectator;
-			Timing.KillCoroutines("M" + ev.Player.PlayerId);
+			ev.Player.GetHub().characterClassManager.NetworkCurClass = RoleType.Spectator;
+			Timing.KillCoroutines("M" + ev.Player.PlayerID);
 
 			lock (MessageQueue.Messages)
-				MessageQueue.Messages.Remove(ev.Player.PlayerId);
+				MessageQueue.Messages.Remove(ev.Player.PlayerID);
 		}
 
 		public void OnPlayerPickupItem(PlayerPickupItemEvent ev)
@@ -675,7 +619,6 @@ namespace CommonPlugin
 				ev.Die = false;
 
 				ReferenceHub hub = ev.Player.GetHub();
-
 				HCZRoom hczRoomType = (HCZRoom)Random.Next((int)HCZRoom.HczRoomCount);
 
 				switch (hczRoomType)
@@ -714,7 +657,7 @@ namespace CommonPlugin
 		public void OnPocketDimensionEnter(PlayerPocketDimensionEnterEvent ev)
 		{
 			if (ev.Player.PlayerID == Scp181id && Plugin.Server.Map.WarheadDetonated)
-				ev.Player.Kill(DamageType.WARHEAD);
+				ev.Player.Kill("SCP-106");
 		}
 
 		public void OnPocketDimensionExit(PlayerPocketDimensionExitEvent ev)
@@ -757,7 +700,7 @@ namespace CommonPlugin
 		public void OnRoundEnd(RoundEndEvent ev)
 		{
 			if (Scp035id != 0)
-				if (ev.Round.Stats.ClassDEscaped == 0 && ev.Round.Stats.ScientistsEscaped == 0)
+				if (ev.Round.Stats.DClassEscaped == 0 && ev.Round.Stats.ScientistsEscaped == 0)
 					ev.LeadingTeam = LeadingTeam.ANOMALIES;
 				else
 					ev.LeadingTeam = LeadingTeam.DRAW;
@@ -769,15 +712,16 @@ namespace CommonPlugin
 
 		public void OnScp096AddTarget(Scp096AddTargetEvent ev)
 		{
-			if (ev.Target.PlayerId == Scp035id)
+			if (ev.Target.PlayerID == Scp035id)
 				ev.Allow = false;
 		}
 
 		public void OnSCP914Activate(SCP914ActivateEvent ev)
 		{
 			List<Smod2.API.Item> items = new List<Smod2.API.Item>();
+
 			foreach (Smod2.API.Item item in ev.ItemInputs)
-				if (TrapItems.Contains(item.UniqueIdentifier))
+				if (TrapItems.Contains(item.SerialNumber))
 					items.Add(item);
 			foreach (Smod2.API.Item item in items)
 				ev.ItemInputs.Remove(item);
@@ -788,85 +732,28 @@ namespace CommonPlugin
 		public void OnSetRole(PlayerSetRoleEvent ev)
 		{
 			ReferenceHub hub = ev.Player.GetHub();
-			ev.UsingDefaultItem = false;
-			ev.Items.Clear();
 
-			switch (hub.characterClassManager.NetworkCurClass)
-			{
-				case RoleType.ClassD:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, ClassdMaxHP));
-					break;
-
-				case RoleType.Scientist:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, ScientistMaxHP));
-					break;
-
-				case RoleType.FacilityGuard:
-				case RoleType.NtfPrivate:
-				case RoleType.NtfSergeant:
-				case RoleType.NtfSpecialist:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, MtfMaxHP));
-					break;
-
-				case RoleType.NtfCaptain:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, MtfCaptainMaxHP));
-					break;
-
-				case RoleType.ChaosInsurgency:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, ChaosInsurgencyHP));
-					break;
-
-				case RoleType.Scp049:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, Scp049MaxHP));
-					break;
-
-				case RoleType.Scp0492:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, Scp0492MaxHP));
-					break;
-
-				case RoleType.Scp079:
-					Timing.RunCoroutine(Timing_OnScp079SwitchTime(hub));
-					break;
-
-				case RoleType.Scp096:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, Scp096MaxHP));
-					break;
-
-				case RoleType.Scp106:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, Scp106MaxHP));
-					break;
-
-				case RoleType.Scp173:
-					Timing.RunCoroutine(Timing_OnSetRole(hub, Scp173MaxHP));
-					break;
-
-				case RoleType.Scp93953:
-				case RoleType.Scp93989:
-					if (hub.playerId == Scp682id)
-						Timing.RunCoroutine(Timing_OnSetRole(hub, Scp682MaxHP));
-					else
-						Timing.RunCoroutine(Timing_OnSetRole(hub, Scp939MaxHP));
-					break;
-
-				case RoleType.Spectator:
-					if (hub.playerId == Scp035id)
-					{
-						Scp035id = 0;
-						hub.playerStats.NetworkmaxArtificialHealth = 75;
-						ClearScpBadge(hub.serverRoles);
-					}
-					else if (hub.playerId == Scp181id)
-					{
-						Scp181id = 0;
-						ClearScpBadge(hub.serverRoles);
-					}
-					else if (hub.playerId == Scp682id)
-					{
-						Scp682id = 0;
-						ClearScpBadge(hub.serverRoles);
-					}
-					break;
+			if(hub.characterClassManager.NetworkCurClass== RoleType.Spectator)
+            {
+				if (hub.playerId == Scp035id)
+				{
+					Scp035id = 0;
+					hub.playerStats.NetworkmaxArtificialHealth = 75;
+					PluginEx.ClearServerBadge(hub.serverRoles);
+				}
+				else if (hub.playerId == Scp181id)
+				{
+					Scp181id = 0;
+					PluginEx.ClearServerBadge(hub.serverRoles);
+				}
+				else if (hub.playerId == Scp682id)
+				{
+					Scp682id = 0;
+					PluginEx.ClearServerBadge(hub.serverRoles);
+				}
 			}
+
+			Timing.RunCoroutine(Timing_OnSetRole(hub));
 		}
 
 		public void OnStopCountdown(WarheadStopEvent ev) => ev.Cancel = bWarhead == true;
@@ -1149,24 +1036,63 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnAdrenalineEffect(Smod2.API.Player player)
+		private IEnumerator<float> Timing_OnConsumableUse(ReferenceHub hub, HealthController healthController, ItemType itemType, RoleType roleType)
 		{
-			ReferenceHub hub = GetReferenceHub(player);
-			float hp = player.PlayerId == Scp035id ? 0.2f : 0.5f;
+			AhpStat.AhpProcess ahpProcess = hub.GetAhpProcess();
 
-			for (int i = 0; i < 80; i++)
-			{
-				if (hub.playerStats.Health + hp > hub.playerStats.maxHP)
-					hub.playerStats.Health = hub.playerStats.maxHP;
-				else
-					hub.playerStats.Health += hp;
+			switch(itemType)
+            {
+				case ItemType.Adrenaline:
+                    {
+						float hp = hub.playerId == Scp035id ? 0.2f : 0.25f;
+						float ahp = hub.playerId == Scp035id ? 0 : 1.0f;
 
-				yield return Timing.WaitForSeconds(0.2f);
-				if (hub.characterClassManager.NetworkCurClass == RoleType.Spectator)
-					yield break;
-			}
+						hub.playerEffectsController.EnableEffect<Invigorated>(8.0f, true);
+						ahpProcess.SustainTime = 8.0f;
 
-			yield break;
+						for (int i = 0; i < 40; i++)
+						{
+							if (healthController.Health + hp > healthController.MaxHealth)
+								healthController.Health = healthController.MaxHealth;
+							else
+								healthController.Health += hp;
+
+							if (ahpProcess.CurrentAmount + ahp > ahpProcess.Limit)
+								ahpProcess.CurrentAmount = ahpProcess.Limit;
+							else
+								ahpProcess.CurrentAmount += ahp;
+
+							yield return Timing.WaitForSeconds(0.2f);
+							if (hub.characterClassManager.NetworkCurClass != roleType)
+								yield break;
+						}
+					}
+					break;
+
+				case ItemType.Painkillers:
+                    {
+						float hp = hub.playerId == Scp035id ? 0.1f : 0.5f;
+						float ahp = hub.playerId == Scp035id ? 0 : 5.0f;
+
+						if (ahpProcess.CurrentAmount + ahp > ahpProcess.Limit)
+							ahpProcess.CurrentAmount = ahpProcess.Limit;
+						else
+							ahpProcess.CurrentAmount += ahp;
+
+						for (int i = 0; i < 60; i++)
+						{
+							if (healthController.Health + hp > healthController.MaxHealth)
+								healthController.Health = healthController.MaxHealth;
+							else
+								healthController.Health += hp;
+
+							yield return Timing.WaitForSeconds(0.2f);
+							if (hub.characterClassManager.NetworkCurClass != roleType)
+								yield break;
+						}
+					}
+					break;
+            }
 		}
 
 		private IEnumerator<float> Timing_OnFlickerLights()
@@ -1178,23 +1104,23 @@ namespace CommonPlugin
 				switch (Scp079Lv)
 				{
 					case Scp079Level.Level_1:
-						PluginMethod.FlickerLights(12, 24);
+						PluginEx.FlickerLights(12, 24);
 						break;
 
 					case Scp079Level.Level_2:
-						PluginMethod.FlickerLights(16, 30);
+						PluginEx.FlickerLights(16, 30);
 						break;
 
 					case Scp079Level.Level_3:
-						PluginMethod.FlickerLights(20, 36);
+						PluginEx.FlickerLights(20, 36);
 						break;
 
 					case Scp079Level.Level_4:
-						PluginMethod.FlickerLights(24, 42);
+						PluginEx.FlickerLights(24, 42);
 						break;
 
 					case Scp079Level.Level_5:
-						PluginMethod.FlickerLights(28, 48);
+						PluginEx.FlickerLights(28, 48);
 						break;
 				}
 
@@ -1221,7 +1147,7 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnRoundStart()
 		{
-            InventorySystem.Inventory itemSpawner = GameObject.Find("Host").GetComponent<InventorySystem.Inventory>();
+            Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
 			GameObject ragdoll = PlayerManager.localPlayer;
 			ReferenceHub hub = ReferenceHub.GetHub(ragdoll);
 			Role role = hub.characterClassManager.Classes.SafeGet((int)RoleType.ClassD);
@@ -1375,7 +1301,7 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnScp703Activate(Vector3 vector3)
         {
-            InventorySystem.Inventory itemSpawner = GameObject.Find("Host").GetComponent<InventorySystem.Inventory>();
+            Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
 
 			while (!bRoundEnd && bScp703Activating)
 			{
@@ -1821,23 +1747,25 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnSetRole(ReferenceHub hub, int hp)
+		private IEnumerator<float> Timing_OnSetRole(ReferenceHub hub)
 		{
+			HealthController healthController = hub.GetHealthControler();
+
 			yield return Timing.WaitForOneFrame;
 
 			switch (hub.characterClassManager.NetworkCurClass)
 			{
 				case RoleType.ClassD:
 					if (Random.Next(5) == 0)
-						hub.inventory.AddNewItem(ItemType.KeycardScientist);
+						hub.inventory.ServerAddItem(ItemType.KeycardScientist);
 					else if (Random.Next(4) == 0)
-						hub.inventory.AddNewItem(ItemType.KeycardJanitor);
+						hub.inventory.ServerAddItem(ItemType.KeycardJanitor);
 
 					if (Random.Next(4) == 0)
-						hub.inventory.AddNewItem(ItemType.Medkit);
+						hub.inventory.ServerAddItem(ItemType.Medkit);
 					else if (Random.Next(3) == 0)
-						hub.inventory.AddNewItem(ItemType.Painkillers);
-					hub.inventory.AddNewItem(ItemType.Flashlight);
+						hub.inventory.ServerAddItem(ItemType.Painkillers);
+					hub.inventory.ServerAddItem(ItemType.Flashlight);
 
 					if (Random.Next(10) == 0)
 						hub.inventory.AddNewItem(ItemType.SCP207);
@@ -2002,12 +1930,16 @@ namespace CommonPlugin
 		{
 			foreach (GameObject gameObject in PlayerManager.players)
             {
-				ReferenceHub hub = GetReferenceHub(gameObject);
-				if (hub.characterClassManager.NetworkCurClass == RoleType.Scp106){
-					if (hub.playerStats.Health + Scp106Heal < hub.playerStats.maxHP)
-						hub.playerStats.Health += Scp106Heal;
+				ReferenceHub hub = ReferenceHub.GetHub(gameObject);
+
+				if (hub.characterClassManager.NetworkCurClass == RoleType.Scp106)
+				{
+					HealthController healthController = hub.GetHealthControler();
+
+					if (healthController.Health + Scp106Heal > healthController.MaxHealth)
+						healthController.Health = healthController.MaxHealth;
 					else
-						hub.playerStats.Health = hub.playerStats.maxHP;
+						healthController.Health += Scp106Heal;
 				}
 			}
 

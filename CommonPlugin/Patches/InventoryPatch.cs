@@ -29,7 +29,7 @@ namespace CommonPlugin.Patches
 
 				if (duration > Cooldown)
 				{
-					PluginMethod.PlaceTrapItem(hub.transform.position);
+					PluginEx.PlaceTrapItem(hub.transform.position);
 
 					EventHandlers.Scp106LastPlace = Plugin.Server.Round.Duration;
 					hub.hints.Show(
