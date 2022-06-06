@@ -80,11 +80,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\HealthController.cs" />
-    <Compile Include="Extensions\InventoryExtension.cs" />
-    <Compile Include="Extensions\PlayerExtension.cs" />
+    <Compile Include="Extensions\InventoryExtensions.cs" />
+    <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Extensions\PluginEx.cs" />
-    <Compile Include="Extensions\ReferenceHubExtension.cs" />
-    <Compile Include="Extensions\Scp106PlayerScriptExtension.cs" />
+    <Compile Include="Extensions\ReferenceHubExtensions.cs" />
+    <Compile Include="Extensions\Scp106PlayerScriptExtensions.cs" />
     <Compile Include="Patches\HealthStatPatch.cs" />
     <Compile Include="Patches\InventoryPatch.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
@@ -109,7 +109,7 @@
     <Compile Include="Patches\Scp939PlayerScript.cs" />
     <Compile Include="Patches\SinkholeEnvironmentalHazardPatch.cs" />
     <Compile Include="MapManager.cs" />
-    <Compile Include="Extensions\TypeExtension.cs" />
+    <Compile Include="Extensions\TypesExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Commands\" />

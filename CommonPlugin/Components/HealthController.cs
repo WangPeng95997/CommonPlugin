@@ -5,9 +5,33 @@ namespace CommonPlugin.Components
 {
     public class HealthController : MonoBehaviour
     {
+        private bool evolution;
+
+        private float heal;
+
+        private float heal2;
+
         private float maxHealth;
 
         private HealthStat healthStat;
+
+        public bool Evolved
+        {
+            get => this.evolution;
+            set => this.evolution = value;
+        }
+
+        public float Heal
+        {
+            get => this.heal;
+            set => this.heal = value;
+        }
+
+        public float Heal2
+        {
+            get => this.heal2;
+            set => this.heal2 = value;
+        }
 
         public float Health
         {
@@ -34,6 +58,8 @@ namespace CommonPlugin.Components
         public void Start()
         {
             this.healthStat = ReferenceHub.GetHub(this.gameObject).playerStats.GetModule<HealthStat>();
+
+            this.Evolved = false;
             this.MaxHealth = this.MaxHealth2;
         }
 
