@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(global::Scp939PlayerScript), "CallCmdShoot", new Type[] { typeof(GameObject) })]
-    internal static class Scp939PlayerScript
+    internal static class CallCmdShootPatch
     {
         private static bool Prefix(GameObject target)
         {

@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using HarmonyLib;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(global::Scp106PlayerScript), "UserCode_CmdMovePlayer", typeof(GameObject), typeof(int))]
-    internal static class Scp106PlayerScript
+    [HarmonyPatch(typeof(Scp106PlayerScript), "UserCode_CmdMovePlayer", typeof(GameObject), typeof(int))]
+    internal static class CmdMovePlayerPatch
     {
         private static bool Prefix(GameObject ply, int t)
         {

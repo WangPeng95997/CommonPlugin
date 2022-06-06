@@ -8,6 +8,7 @@ using InventorySystem;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
+using InventorySystem.Items.MicroHID;
 using InventorySystem.Items.Pickups;
 using MEC;
 using Mirror;
@@ -1196,12 +1197,12 @@ namespace CommonPlugin
 			foreach (Player ply in players)
 			{
 				ReferenceHub hub = ply.GetHub();
-
+				HealthController healthController = hub.GetHealthControler();
 
 				switch (Scp914Machine.singleton.knobState)
 				{
 					case Scp914Knob.Rough:
-						switch ((ItemType)ply.GetCurrentItem().ItemType)
+						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								// 希望卡没事[保佑][保佑][保佑]
@@ -1219,14 +1220,15 @@ namespace CommonPlugin
 							case ItemType.KeycardFacilityManager:
 							case ItemType.KeycardChaosInsurgency:
 							case ItemType.KeycardO5:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
 								hub.inventory.ServerAddItem(ItemType.KeycardJanitor);
 								break;
 						}
 						break;
 
 					case Scp914Knob.Coarse:
-						switch ((ItemType)ply.GetCurrentItem().ItemType)
+						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								// 希望卡没事[保佑][保佑][保佑]
@@ -1291,7 +1293,7 @@ namespace CommonPlugin
 						break;
 
 					case Scp914Knob.OneToOne:
-						switch ((ItemType)ply.GetCurrentItem().ItemType)
+						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
@@ -1356,7 +1358,7 @@ namespace CommonPlugin
 						break;
 
 					case Scp914Knob.Fine:
-						switch ((ItemType)ply.GetCurrentItem().ItemType)
+						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
@@ -1415,13 +1417,12 @@ namespace CommonPlugin
 
 							case ItemType.KeycardO5:
 								// 希望卡没事[保佑][保佑][保佑]
-								// hub.inventory.items.Remove(hub.inventory.GetItemInHand());
 								break;
 						}
 						break;
 
 					case Scp914Knob.VeryFine:
-						switch ((ItemType)ply.GetCurrentItem().ItemType)
+						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
@@ -1480,7 +1481,6 @@ namespace CommonPlugin
 
 							case ItemType.KeycardO5:
 								// 希望卡没事[保佑][保佑][保佑]
-								// hub.inventory.items.Remove(hub.inventory.GetItemInHand());
 								break;
 						}
 
@@ -1488,41 +1488,16 @@ namespace CommonPlugin
 							switch (hub.characterClassManager.NetworkCurClass)
 							{
 								case RoleType.ClassD:
-									hub.playerStats.maxHP = ClassdMaxHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
 								case RoleType.Scientist:
-									hub.playerStats.maxHP = ScientistMaxHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
 								case RoleType.FacilityGuard:
-									hub.playerStats.maxHP = FacilityGuardHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
-								case RoleType.NtfCadet:
-									hub.playerStats.maxHP = NtfCadetHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
-								case RoleType.NtfLieutenant:
-									hub.playerStats.maxHP = NtfLieutenantHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
-								case RoleType.NtfScientist:
-									hub.playerStats.maxHP = NtfScientistHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
-								case RoleType.NtfCommander:
-									hub.playerStats.maxHP = NtfCommanderHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
-
-								case RoleType.ChaosInsurgency:
+								case RoleType.NtfPrivate:
+								case RoleType.NtfSergeant:
+								case RoleType.NtfSpecialist:
+								case RoleType.NtfCaptain:
+								case RoleType.ChaosConscript:
+								case RoleType.ChaosRifleman:
+								case RoleType.ChaosRepressor:
+								case RoleType.ChaosMarauder:
 									hub.playerStats.maxHP = ChaosInsurgencyHP;
 									hub.playerStats.Health = hub.playerStats.maxHP;
 									break;
@@ -1769,7 +1744,7 @@ namespace CommonPlugin
 					hub.inventory.SendAmmoNextFrame = true;
 					break;
 
-				case RoleType.ChaosRepressor:
+				case RoleType.ChaosMarauder:
 					hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
 					hub.inventory.ServerAddItem(ItemType.GunShotgun);
 					hub.inventory.ServerAddItem(ItemType.Medkit);
@@ -1782,11 +1757,11 @@ namespace CommonPlugin
 					hub.inventory.SendAmmoNextFrame = true;
 					break;
 
-				case RoleType.ChaosMarauder:
+				case RoleType.ChaosRepressor:
 					hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
 					hub.inventory.ServerAddItem(ItemType.GunLogicer);
 					hub.inventory.ServerAddItem(ItemType.GunShotgun);
-					(hub.inventory.ServerAddItem(ItemType.ParticleDisruptor).PickupDropModel as FirearmPickup).NetworkStatus = new FirearmStatus(1, FirearmStatusFlags.None, 0);
+					(hub.inventory.ServerAddItem(ItemType.ParticleDisruptor) as Firearm).Status = new FirearmStatus(1, FirearmStatusFlags.Cocked | FirearmStatusFlags.MagazineInserted, 1);
 					hub.inventory.ServerAddItem(ItemType.Adrenaline);
 					hub.inventory.ServerAddItem(ItemType.Medkit);
 					hub.inventory.ServerAddItem(ItemType.SCP207);
@@ -1810,7 +1785,7 @@ namespace CommonPlugin
 				case RoleType.Scp173:
 				case RoleType.Scp93953:
 				case RoleType.Scp93989:
-					Timing.RunCoroutine(Timing_SelfHealth(hub));
+					Timing.RunCoroutine(Timing_SelfHealth(hub, healthControler, hub.characterClassManager.NetworkCurClass));
 					break;
 			}
 
@@ -1819,6 +1794,7 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnTriggerTrapItem(ReferenceHub victim)
 		{
+			victim.inventory.NetworkCurItem = ItemIdentifier.None;
 			victim.scp106PlayerScript.TeleportAnimation();
 			victim.scp106PlayerScript.goingViaThePortal = true;
 

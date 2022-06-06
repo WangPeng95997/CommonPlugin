@@ -3,17 +3,18 @@ using System.Reflection;
 using System.Reflection.Emit;
 
 using Hints;
-using InventorySystem.Items;
 using InventorySystem.Items.Usables;
+using Mirror;
+using UnityEngine;
 
 using HarmonyLib;
-using static HarmonyLib.AccessTools;
-
 using NorthwoodLib.Pools;
+
+using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(UsableItemsController), "ServerReceivedStatus")]
+    [HarmonyPatch(typeof(UsableItemsController), "ServerReceivedStatus", typeof(NetworkConnection), typeof(StatusMessage))]
     internal static class ServerReceivedStatusPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -22,18 +23,22 @@ namespace CommonPlugin.Patches
 
             Label returnLabel = generator.DefineLabel();
 
-            int index = 20;
+            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Stloc_2) + 1;
 
             newInstructions.InsertRange(index, new CodeInstruction[]
             {
-                new(OpCodes.Ldloc_1),
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Call, Method(typeof(UsableItemsControllerPatch), nameof(UsableItemsControllerPatch.OnUsingItem))),
-                new(OpCodes.Brtrue_S,returnLabel),
+                new(OpCodes.Callvirt, PropertyGetter(typeof(NetworkConnection), nameof(NetworkConnection.identity))),
+                new(OpCodes.Callvirt, PropertyGetter(typeof(NetworkIdentity), nameof(NetworkIdentity.gameObject))),
+                new(OpCodes.Call, Method(typeof(ReferenceHub), nameof(ReferenceHub.GetHub), new[] {typeof(GameObject)})),
+                new(OpCodes.Ldloc_0),
+                new(OpCodes.Call, Method(typeof(ServerReceivedStatusPatch), nameof(ServerReceivedStatusPatch.OnUsingItem))),
+                new(OpCodes.Brtrue_S, returnLabel),
                 new(OpCodes.Ret),
+                new CodeInstruction(OpCodes.Nop).WithLabels(returnLabel),
             });
 
-            newInstructions[newInstructions.Count - 1].labels.Add(returnLabel);
+            newInstructions[newInstructions.Count - 2].labels.Add(returnLabel);
 
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];
@@ -43,9 +48,7 @@ namespace CommonPlugin.Patches
 
         private static bool OnUsingItem(ReferenceHub hub, UsableItem usableItem)
         {
-            ItemType itemType = usableItem.gameObject.GetComponent<ItemBase>().ItemTypeId;
-
-            if (itemType == ItemType.SCP207 && hub.playerEffectsController.GetEffect<CustomPlayerEffects.Scp207>().Intensity>0)
+            if (usableItem.ItemTypeId == ItemType.SCP207 && hub.playerEffectsController.GetEffect<CustomPlayerEffects.Scp207>().Intensity > 0)
             {
                 hub.hints.Show(
                     new TextHint("<b><color=#FF0000>SCP-207</color>的效果不能进行叠加</b>",
@@ -56,11 +59,11 @@ namespace CommonPlugin.Patches
 
             if (hub.playerId == EventHandlers.Scp035id)
             {
-                switch (itemType)
+                switch (usableItem.ItemTypeId)
                 {
                     case ItemType.SCP207:
                     case ItemType.SCP268:
-                    case ItemType.Painkillers:
+                    case ItemType.SCP1853:
                         hub.hints.Show(
                             new TextHint("<b><color=#FF0000>SCP-035</color>不能使用该物品</b>",
                             new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));

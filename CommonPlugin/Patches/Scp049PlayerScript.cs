@@ -4,7 +4,7 @@ using HarmonyLib;
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(Scp049_2PlayerScript), "UserCode_CmdHurtPlayer", typeof(GameObject))]
-    internal static class Scp049PlayerScript
+    internal static class CmdHurtPlayerPatch
     {
         private static bool Prefix(GameObject plyObj)
         {

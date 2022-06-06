@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using Mirror;
+﻿using Mirror;
 using PlayableScps;
+using UnityEngine;
 using HarmonyLib;
 
 namespace CommonPlugin.Patches
@@ -23,8 +23,6 @@ namespace CommonPlugin.Patches
 
         private static bool Prefix(Scp096 __instance)
         {
-            __instance.Hub.characterClassManager.
-            __instance.CurMaxShield
 
             return false;
         }

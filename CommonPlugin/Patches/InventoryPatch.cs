@@ -20,9 +20,6 @@ namespace CommonPlugin.Patches
         {
 			ReferenceHub hub = ReferenceHub.GetHub(__instance.gameObject);
 
-            if (hub.scp106PlayerScript.goingViaThePortal)
-                return false;
-
 			if (hotkeyButtonPressed == ActionName.HotkeyKeycard && hub.characterClassManager.NetworkCurClass == RoleType.Scp106 && !Plugin.Server.Map.WarheadDetonated)
             {
 				int duration = Plugin.Server.Round.Duration - EventHandlers.Scp106LastPlace;

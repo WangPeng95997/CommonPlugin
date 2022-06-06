@@ -14,7 +14,7 @@ namespace CommonPlugin.Extensions
         {
             AhpStat.AhpProcess ahpProcess = (fieldInfo.GetValue(hub.playerStats.StatModules[1] as AhpStat) as IEnumerable<AhpStat.AhpProcess>).FirstOrDefault();
 
-            return ahpProcess is not null ? ahpProcess : (hub.playerStats.StatModules[1] as AhpStat).ServerAddProcess();
+            return ahpProcess is not null ? ahpProcess : (hub.playerStats.StatModules[1] as AhpStat).ServerAddProcess(0.0f, 75.0f, 0.75f, 0.7f, 0, true);
         }
 
         public static HealthController GetHealthControler(this ReferenceHub hub) => hub.gameObject.GetComponent<HealthController>();

@@ -28,7 +28,7 @@ namespace CommonPlugin.Extensions
 		{
 			foreach (FlickerableLightController fc in Object.FindObjectsOfType<FlickerableLightController>())
 				if (Random.Next(5) == 0)
-					fc.ServerFlickerLights(Random.Next(1));
+					fc.ServerFlickerLights(Random.Next(minValue, maxValue));
 		}
 
 		public static RoleType GetRandomScp()
@@ -37,7 +37,7 @@ namespace CommonPlugin.Extensions
 			RoleType roleType = RoleType.None;
 
 			foreach (GameObject gameObject in PlayerManager.players)
-				switch (global::ReferenceHub.GetHub(gameObject).characterClassManager.NetworkCurClass)
+				switch (ReferenceHub.GetHub(gameObject).characterClassManager.NetworkCurClass)
 				{
 					case RoleType.Scp049:
 						bScp049 = true;
@@ -110,9 +110,9 @@ namespace CommonPlugin.Extensions
 		public static void PlaceTrapItem(Vector3 position)
 		{
 			ItemType itemType = ItemType.None;
-			TrapItem trapItemType = (TrapItem)Random.Next((int)TrapItem.TrapItemCount);
+			TrapItem trapItem = (TrapItem)Random.Next((int)TrapItem.TrapItemCount);
 
-			switch (trapItemType)
+			switch (trapItem)
 			{
 				case TrapItem.Adrenaline:
 					itemType = ItemType.Adrenaline;
@@ -166,47 +166,52 @@ namespace CommonPlugin.Extensions
 		public static void SetScp035(ReferenceHub hub)
 		{
 			EventHandlers.Scp035id = hub.playerId;
+
 			hub.GetAhpProcess().Limit = 35.0f;
 			hub.hints.Show(
-				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-035</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
-				$"<size=35><b></b></size>\n<size=35><b>你拥有极高的子弹抗性, 与其他<color=#FF0000>SCP</color>合作, 消灭所有人类</b></size></voffset>",
+				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-035</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+				$"<size=35><b>你拥有极高的子弹抗性, 与其他<color=#FF0000>SCP</color>合作, 消灭所有人类</b></size></voffset>",
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 		}
 
 		public static void SetScp181(ReferenceHub hub)
 		{
-			/*
-			SetScpBadge(hub.serverRoles, "SCP-181");
+			EventHandlers.Scp181id = hub.playerId;
+			SetServerBadge(hub.serverRoles, "SCP-181");
+
 			hub.inventory.ServerDropAll();
-			hub.inventory.AddNewItem(ItemType.Flashlight);
-			hub.inventory.AddNewItem(ItemType.SCP268);
-			hub.inventory.AddNewItem(ItemType.SCP500);
-			hub.inventory.AddNewItem(ItemType.Medkit);
-			hub.inventory.AddNewItem(ItemType.SCP207);
-			hub.inventory.AddNewItem(ItemType.SCP207);
-			hub.inventory.AddNewItem(ItemType.SCP207);
-			hub.inventory.AddNewItem(ItemType.Coin);
-			hub.hints.Show(new TextHint(
-				$"<voffset=27em><size=120><color=#FF0000><b>SCP-181</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<size=35><b>" +
-				$"你有几率打开任何门</b></size>\n<size=35><b>背包里的每件物品都能为你抵挡一次来自<color=#FF0000>SCP</color>的伤害</b></size></voffset>",
+			hub.inventory.ServerAddItem(ItemType.Flashlight);
+			hub.inventory.ServerAddItem(ItemType.SCP500);
+			hub.inventory.ServerAddItem(ItemType.SCP268);
+			hub.inventory.ServerAddItem(ItemType.SCP207);
+			hub.inventory.ServerAddItem(ItemType.SCP207);
+			hub.inventory.ServerAddItem(ItemType.SCP207);
+			hub.inventory.ServerAddItem(ItemType.SCP207);
+			hub.inventory.ServerAddItem(ItemType.Coin);
+			hub.hints.Show(
+				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-181</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+				$"<size=35><b>你有几率打开任何门, 背包里的每件物品都能为你抵挡一次来自<color=#FF0000>SCP</color>的伤害</b></size></voffset>",
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
-			*/
 		}
 
 		public static void SetScp682(ReferenceHub hub)
 		{
-			/*
-			Scp682id = hub.playerId;
-			SetScpBadge(hub.serverRoles, "SCP-682");
-			if (new System.Random().Next(2) == 0)
+			EventHandlers.Scp682id = hub.playerId;
+			SetServerBadge(hub.serverRoles, "SCP-682");
+
+			if (Random.Next(2) == 0)
 				hub.characterClassManager.SetPlayersClass(RoleType.Scp93953, hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
 			else
 				hub.characterClassManager.SetPlayersClass(RoleType.Scp93989, hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
-			hub.hints.Show(new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-682</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<size=35><b>你拥有正常视野, 极高的伤害和生命恢复速度</b></size>\n<size=35><b>并且按住V键时可以将门或检查点直接摧毁</b></size></voffset>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
+
+			hub.hints.Show(
+				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-682</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+				$"<size=35><b>你拥有正常视野, 极高的伤害和极强的生命力, 按住V键时可以直接破坏门或检查点</b></size></voffset>",
+				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
+
 			Timing.CallDelayed(0.1f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
 			Timing.CallDelayed(1.0f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
 			Timing.CallDelayed(2.0f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
-			*/
 		}
 
 		public static void SetServerBadge(ServerRoles serverRoles, string badgeName, string badgeColor = "red")

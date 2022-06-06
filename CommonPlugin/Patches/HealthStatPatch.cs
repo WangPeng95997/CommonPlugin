@@ -1,5 +1,6 @@
 ﻿using PlayerStatsSystem;
 using HarmonyLib;
+
 using CommonPlugin.Components;
 
 namespace CommonPlugin.Patches
@@ -19,6 +20,7 @@ namespace CommonPlugin.Patches
         private const float Scp096 = EventHandlers.Scp096MaxHP;
         private const float Scp106 = EventHandlers.Scp106MaxHP;
         private const float Scp173 = EventHandlers.Scp173MaxHP;
+        private const float Scp682 = EventHandlers.Scp682MaxHP;
         private const float Scp939 = EventHandlers.Scp939MaxHP;
 
         private static bool Prefix(HealthStat __instance, ref float __result)
@@ -82,7 +84,7 @@ namespace CommonPlugin.Patches
 
                 case RoleType.Scp93953:
                 case RoleType.Scp93989:
-                    __result = Scp939;
+                    __result = __instance.Hub.playerId == EventHandlers.Scp682id ? Scp682 : Scp939;
                     break;
 
                 default:
