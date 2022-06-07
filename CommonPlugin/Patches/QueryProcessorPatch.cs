@@ -372,31 +372,6 @@ namespace CommonPlugin.Patches
                     }
                     break;
 
-                case "unlock1":
-                    hub.playerStats.TargetAchieve(__instance.connectionToClient, "tableshaveturned");
-                    __instance.GCT.SendToClient(__instance.connectionToClient, "《基金会之耻》 成就已解锁", "magenta");
-                    break;
-
-                case "unlock2":
-                    hub.playerStats.TargetAchieve(__instance.connectionToClient, "pewpew");
-                    __instance.GCT.SendToClient(__instance.connectionToClient, "《突突突！》 成就已解锁", "magenta");
-                    break;
-
-                case "unlock3":
-                    hub.playerStats.TargetAchieve(__instance.connectionToClient, "betrayal");
-                    __instance.GCT.SendToClient(__instance.connectionToClient, "《纳尼？！》 成就已解锁", "magenta");
-                    break;
-
-                case "unlock4":
-                    hub.playerStats.TargetAchieve(__instance.connectionToClient, "attemptedrecharge");
-                    __instance.GCT.SendToClient(__instance.connectionToClient, "《过流》 成就已解锁", "magenta");
-                    break;
-
-                case "unlock5":
-                    hub.playerStats.TargetStats(__instance.connectionToClient, "dboys_killed", "justresources", 50);
-                    __instance.GCT.SendToClient(__instance.connectionToClient, "《他们只不过是消耗品...》 成就已解锁", "magenta");
-                    break;
-
                 default:
                     __instance.GCT.SendToClient(__instance.connectionToClient, "无效的指令! .c 团队消息  .bc 全体消息", "red");
                     break;
@@ -549,19 +524,3 @@ namespace CommonPlugin.Patches
 // CHECKPOINT_LCZ_A
 // CHECKPOINT_LCZ_B
 // CHECKPOINT_EZ_HCZ
-
-/*
-    case "admin":
-        switch (player.GetUserGroup().Name)
-        {
-            case "owner":
-            case "administrator":
-                __instance.GCT.SendToClient(__instance.connectionToClient, "你没有该权限!", "red");
-                break;
-
-            default:
-                __instance.GCT.SendToClient(__instance.connectionToClient, "你没有该权限!", "red");
-                break;
-        }
-        break;
-*/

@@ -12,8 +12,6 @@ namespace CommonPlugin.Patches
     {
 		private static Plugin Plugin = PluginManager.Manager.Plugins[0];
 
-		private static System.Random Random = new System.Random();
-
 		private const int Cooldown = EventHandlers.Scp106Cooldown;
 
 		private static bool Prefix(InventorySystem.Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)

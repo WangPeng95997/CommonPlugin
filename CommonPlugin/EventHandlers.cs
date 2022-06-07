@@ -76,44 +76,35 @@ namespace CommonPlugin
 
 		// 角色生命值
 		public const float ClassdMaxHP = 100.0f;
-
 		public const float ScientistMaxHP = 100.0f;
 
 		public const float MtfMaxHP = 125.0f;
-
 		public const float MtfCaptainMaxHP = 150.0f;
-
 		public const float ChaosMaxHP = 125.0f;
-
 		public const float ChaosRepressorMaxHP = 150.0f;
 
 		public const float Scp0492MaxHP = 500.0f;
-
 		public const float Scp049MaxHP = 2500.0f;
-
 		public const float Scp079MaxHP = 100000.0f;
-
 		public const float Scp096MaxHP = 1500.0f;
-		// 
-		public static int Scp035id;
+		public const float Scp106MaxHP = 1200;
+		public const float Scp173MaxHP = 3000;
+		public const float Scp682MaxHP = 3200;
+		public const float Scp939MaxHP = 2200;
 
 		//public static int Scp049id;
-
-		public static int Scp079id;
-
 		//public static int Scp096id;
-
 		//public static int Scp106id;
-
 		//public static int Scp173id;
+		//public static int Scp939id;
 
+		public static int Scp035id;
+		public static int Scp079id;
 		public static int Scp181id;
-
 		public static int Scp682id;
-
 		public static int Scp703id;
 
-		//public static int Scp939id;
+		
 
 		public const int lateJoinTime = 90;
 
@@ -172,7 +163,7 @@ namespace CommonPlugin
 		private readonly float Scp096Heal = 2.0f;
 
 		// SCP-106
-		public const int Scp106MaxHP = 1000;
+		
 
 		private const float Scp106Heal = 20.0f;
 
@@ -182,30 +173,22 @@ namespace CommonPlugin
 
 		// SCP-173
 		
-		public const int Scp173MaxHP = 3200;
+		
 
 		private readonly float Heal173 = 7.5f;
 
 		private readonly float Scp173Hit = 0.67f;
 
 		// SCP-682
-		public const int Scp682MaxHP = 4000;
-
-		private const float heal682 = 8.0f;
-
-		private const float lifeSteal682 = 40.0f;
+		
+		private const float Scp682kill = 40.0f;
 
 		// SCP-703
 		public static bool bScp703Activating = false;
 
 		// SCP-939
-		public const int Scp939MaxHP = 3000;
+		
 
-		private readonly float healScp939_1 = 1.0f;
-
-		private readonly float healScp939_2 = 6.0f;
-
-		private readonly float lifeStealScp939 = 25.0f;
 
 		private const float Scp939Hit = 25.0f;
 
@@ -724,7 +707,7 @@ namespace CommonPlugin
 			foreach (Item item in items)
 				ev.ItemInputs.Remove(item);
 
-			Timing.RunCoroutine(Timing_OnScp914Activate(ev.PlayerInputs));
+			Timing.RunCoroutine(Timing_OnScp914Activate(ev.PlayerInputs, ev.KnobSetting));
 		}
 
 		public void OnSetRole(PlayerSetRoleEvent ev)
@@ -736,6 +719,11 @@ namespace CommonPlugin
 				if (hub.playerId == Scp035id)
 				{
 					Scp035id = 0;
+					PluginEx.ClearServerBadge(hub.serverRoles);
+				}
+				else if (hub.playerId == Scp079id)
+                {
+					Scp079id = 0;
 					PluginEx.ClearServerBadge(hub.serverRoles);
 				}
 				else if (hub.playerId == Scp181id)
@@ -1117,8 +1105,8 @@ namespace CommonPlugin
 			{
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
-				SetScp181(hub);
 				Players.RemoveAt(index);
+				PluginEx.SetScp181(hub);
 			}
 
 			// 在基础上增加科学家和设施警卫
@@ -1130,8 +1118,8 @@ namespace CommonPlugin
 			{
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
-				SetScp035(hub);
 				Players.RemoveAt(index);
+				PluginEx.SetScp035(hub);
 			}
 
 			// 创建SCP-682或本局未生成的SCP
@@ -1139,29 +1127,32 @@ namespace CommonPlugin
 			{
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
-				Timing.RunCoroutine(Timing_SetRandomScp(hub));
-			}
 
-			yield break;
+				if (Scp682id == 0 && PlayerManager.players.Count * 3.33 > Random.Next(100))
+					PluginEx.SetScp682(hub);
+				else
+					hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
+			}
 		}
 
 		private IEnumerator<float> Timing_OnScp079SwitchTime(ReferenceHub hub)
 		{
 			for (int i = Scp079SwitchTime; i > 0 && hub.characterClassManager.NetworkCurClass == RoleType.Scp079; i--)
 			{
-				hub.hints.Show(new TextHint($"<b>你还有<color=#FF0000>{i}</color>秒可以在控制台输入<color=#FF0000>.scp</color>指令随机成为其他SCP</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 1.0f));
+				hub.hints.Show(
+					new TextHint($"<b>你还有<color=#FF0000>{i}</color>秒可以在控制台输入<color=#FF0000>.scp</color>指令随机成为其他SCP</b>",
+					new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 1.0f));
+
 				yield return Timing.WaitForSeconds(1.0f);
 			}
 
 			yield return Timing.WaitForSeconds(1.0f);
+
 			if (hub.characterClassManager.NetworkCurClass == RoleType.Scp079)
             {
 				Scp079id = hub.playerId;
-				Timing.RunCoroutine(Timing_SelfHealth(hub));
 				Timing.RunCoroutine(Timing_OnFlickerLights());
 			}
-
-			yield break;
 		}
 
 		private IEnumerator<float> Timing_OnScp703Activate(Vector3 vector3)
@@ -1192,21 +1183,21 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_OnScp914Activate(List<Player> players)
+		private IEnumerator<float> Timing_OnScp914Activate(List<Player> players, Scp914KnobSetting scp914KnobSetting)
 		{
 			foreach (Player ply in players)
 			{
 				ReferenceHub hub = ply.GetHub();
 				HealthController healthController = hub.GetHealthControler();
 
-				switch (Scp914Machine.singleton.knobState)
+				switch (scp914KnobSetting)
 				{
-					case Scp914Knob.Rough:
+					case Scp914KnobSetting.Rough:
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								// 希望卡没事[保佑][保佑][保佑]
-								//player.GetCurrentItem().Remove();
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 
 							case ItemType.KeycardScientist:
@@ -1227,360 +1218,436 @@ namespace CommonPlugin
 						}
 						break;
 
-					case Scp914Knob.Coarse:
+					case Scp914KnobSetting.Coarse:
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
 								// 希望卡没事[保佑][保佑][保佑]
-								// hub.inventory.items.Remove(hub.inventory.GetItemInHand());
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 
 							case ItemType.KeycardScientist:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardJanitor);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardJanitor);
 								break;
 
-							case ItemType.KeycardScientistMajor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientist);
+							case ItemType.KeycardResearchCoordinator:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardScientist);
 								break;
 
 							case ItemType.KeycardZoneManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientist);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardScientist);
 								break;
 
 							case ItemType.KeycardGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardZoneManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardZoneManager);
 								break;
 
-							case ItemType.KeycardSeniorGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardGuard);
+							case ItemType.KeycardNTFOfficer:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardGuard);
 								break;
 
 							case ItemType.KeycardContainmentEngineer:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardZoneManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardZoneManager);
 								break;
 
 							case ItemType.KeycardNTFLieutenant:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardSeniorGuard);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFOfficer);
 								break;
 
 							case ItemType.KeycardNTFCommander:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardNTFLieutenant);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFLieutenant);
 								break;
 
 							case ItemType.KeycardFacilityManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardContainmentEngineer);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardContainmentEngineer);
 								break;
 
 							case ItemType.KeycardChaosInsurgency:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardSeniorGuard);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFOfficer);
 								break;
 
 							case ItemType.KeycardO5:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardFacilityManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardFacilityManager);
 								break;
 						}
 						break;
 
-					case Scp914Knob.OneToOne:
+					case Scp914KnobSetting.OneToOne:
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardZoneManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardZoneManager);
 								break;
 
 							case ItemType.KeycardScientist:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardZoneManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardZoneManager);
 								break;
 
-							case ItemType.KeycardScientistMajor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardGuard);
+							case ItemType.KeycardResearchCoordinator:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardGuard);
 								break;
 
 							case ItemType.KeycardZoneManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardGuard);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardGuard);
 								break;
 
 							case ItemType.KeycardGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientistMajor);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardResearchCoordinator);
 								break;
 
-							case ItemType.KeycardSeniorGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardContainmentEngineer);
+							case ItemType.KeycardNTFOfficer:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardContainmentEngineer);
 								break;
 
 							case ItemType.KeycardContainmentEngineer:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardFacilityManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardFacilityManager);
 								break;
 
 							case ItemType.KeycardNTFLieutenant:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardContainmentEngineer);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardContainmentEngineer);
 								break;
 
 							case ItemType.KeycardNTFCommander:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardChaosInsurgency);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
 								break;
 
 							case ItemType.KeycardFacilityManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardContainmentEngineer);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardContainmentEngineer);
 								break;
 
 							case ItemType.KeycardChaosInsurgency:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardNTFCommander);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFCommander);
 								break;
 
 							case ItemType.KeycardO5:
 								// 希望卡没事[保佑][保佑][保佑]
-								// hub.inventory.items.Remove(hub.inventory.GetItemInHand());
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 						}
 						break;
 
-					case Scp914Knob.Fine:
+					case Scp914KnobSetting.Fine:
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientist);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardScientist);
 								break;
 
 							case ItemType.KeycardScientist:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientistMajor);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardResearchCoordinator);
 								break;
 
-							case ItemType.KeycardScientistMajor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardContainmentEngineer);
+							case ItemType.KeycardResearchCoordinator:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardContainmentEngineer);
 								break;
 
 							case ItemType.KeycardZoneManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardFacilityManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardFacilityManager);
 								break;
 
 							case ItemType.KeycardGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardSeniorGuard);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFOfficer);
 								break;
 
-							case ItemType.KeycardSeniorGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardNTFLieutenant);
+							case ItemType.KeycardNTFOfficer:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFLieutenant);
 								break;
 
 							case ItemType.KeycardContainmentEngineer:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardNTFLieutenant:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardNTFCommander);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFCommander);
 								break;
 
 							case ItemType.KeycardNTFCommander:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardFacilityManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardChaosInsurgency:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardO5:
 								// 希望卡没事[保佑][保佑][保佑]
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 						}
 						break;
 
-					case Scp914Knob.VeryFine:
+					case Scp914KnobSetting.VeryFine:
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientist);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardScientist);
 								break;
 
 							case ItemType.KeycardScientist:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardScientistMajor);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardResearchCoordinator);
 								break;
 
-							case ItemType.KeycardScientistMajor:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardContainmentEngineer);
+							case ItemType.KeycardResearchCoordinator:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardContainmentEngineer);
 								break;
 
 							case ItemType.KeycardZoneManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardFacilityManager);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardFacilityManager);
 								break;
 
 							case ItemType.KeycardGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardNTFLieutenant);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFLieutenant);
 								break;
 
-							case ItemType.KeycardSeniorGuard:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardNTFCommander);
+							case ItemType.KeycardNTFOfficer:
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardNTFCommander);
 								break;
 
 							case ItemType.KeycardContainmentEngineer:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardNTFLieutenant:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardNTFCommander:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardFacilityManager:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardChaosInsurgency:
-								hub.inventory.items.Remove(hub.inventory.GetItemInHand());
-								hub.inventory.AddNewItem(ItemType.KeycardO5);
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
+								hub.inventory.UserInventory.Items.Remove(hub.inventory.CurInstance.ItemSerial);
+								hub.inventory.ServerAddItem(ItemType.KeycardO5);
 								break;
 
 							case ItemType.KeycardO5:
 								// 希望卡没事[保佑][保佑][保佑]
+								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 						}
 
-						if (hub.playerId != Scp035id)
-							switch (hub.characterClassManager.NetworkCurClass)
-							{
-								case RoleType.ClassD:
-								case RoleType.Scientist:
-								case RoleType.FacilityGuard:
-								case RoleType.NtfPrivate:
-								case RoleType.NtfSergeant:
-								case RoleType.NtfSpecialist:
-								case RoleType.NtfCaptain:
-								case RoleType.ChaosConscript:
-								case RoleType.ChaosRifleman:
-								case RoleType.ChaosRepressor:
-								case RoleType.ChaosMarauder:
-									hub.playerStats.maxHP = ChaosInsurgencyHP;
-									hub.playerStats.Health = hub.playerStats.maxHP;
-									break;
+						switch (hub.characterClassManager.NetworkCurClass)
+						{
+							case RoleType.ClassD:
+							case RoleType.Scientist:
+							case RoleType.FacilityGuard:
+							case RoleType.NtfPrivate:
+							case RoleType.NtfSergeant:
+							case RoleType.NtfSpecialist:
+							case RoleType.NtfCaptain:
+							case RoleType.ChaosConscript:
+							case RoleType.ChaosRifleman:
+							case RoleType.ChaosMarauder:
+							case RoleType.ChaosRepressor:
+								if (hub.playerId != Scp035id)
+									healthController.Heal = healthController.MaxHealth = healthController.MaxHealth2;
+								break;
 
-								case RoleType.Scp049:
-									if (hub.playerStats.maxHP != Scp049MaxHP2)
-									{
-										hub.playerStats.maxHP = Scp049MaxHP2;
-										SetScpBadge(hub.serverRoles, "SCP-049");
-										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									}
-									else
-										hub.hints.Show(new TextHint("<b>强化失败!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
+							case RoleType.Scp049:
+								if (healthController.Evolved)
+								{
+									healthController.Evolved = true;
+									healthController.MaxHealth = healthController.MaxHealth + 300.0f;
+									healthController.Health += 300.0f;
 
-								case RoleType.Scp0492:
-									hub.hints.Show(new TextHint("<b>强化失败, <color=#FF0000>SCP-049-2</color>不能进行强化!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
+									AhpStat.AhpProcess ahpProcess = hub.GetAhpProcess();
+									ahpProcess.Limit = 200.0f;
+									ahpProcess.DecayRate = -1.2f;
 
-								case RoleType.Scp096:
-									if (Scp096id == 0)
-									{
-										Scp096id = hub.playerId;
-										SetScpBadge(hub.serverRoles, "SCP-096");
-										hub.playerStats.NetworkmaxArtificialHealth = (int)Scp096MaxShield;
-										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									}
-									else
-										hub.hints.Show(new TextHint("<b>强化失败!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
+									PluginEx.SetServerBadge(hub.serverRoles, "SCP-049");
+									hub.hints.Show(
+										new TextHint("<b>强化成功!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+								}
+								else
+									hub.hints.Show(
+										new TextHint("<b>强化失败!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								break;
 
-								case RoleType.Scp106:
-									if (hub.serverRoles.NetworkMyText != "SCP-106")
-									{
-										SetScpBadge(hub.serverRoles, "SCP-106");
-										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									}
-									else
-										hub.hints.Show(new TextHint("<b>强化失败!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
+							case RoleType.Scp0492:
+								hub.hints.Show(
+									new TextHint("<b>强化失败!</b>",
+									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								break;
 
-								case RoleType.Scp173:
-									if (hub.serverRoles.NetworkMyText != "SCP-173")
-									{
-										SetScpBadge(hub.serverRoles, "SCP-173");
-										hub.playerEffectsController.EnableEffect<Scp207>();
-										hub.playerEffectsController.EnableEffect<Scp207>();
-										hub.playerEffectsController.EnableEffect<Scp207>();
-										hub.playerEffectsController.EnableEffect<Scp207>();
-										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									}
-									else
-										hub.hints.Show(new TextHint("<b>强化失败!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
+							case RoleType.Scp096:
+								if (healthController.Evolved)
+								{
+									healthController.Evolved = true;
+									healthController.MaxHealth = healthController.MaxHealth + 200.0f;
+									healthController.Health += 200.0f;
 
-								case RoleType.Scp93953:
-									if (hub.playerId == Scp682id)
-										hub.hints.Show(new TextHint("<b>强化失败, <color=#FF0000>SCP-682</color>不能进行强化!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									else if (hub.playerStats.maxHP != Scp939MaxHP2)
-									{
-										hub.playerStats.maxHP = Scp939MaxHP2;
-										SetScpBadge(hub.serverRoles, "SCP-939-53");
-										hub.playerStats.artificialHpDecay = -1.25f;
-										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									}
-									else
-										hub.hints.Show(new TextHint("<b>强化失败!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
+									AhpStat.AhpProcess ahpProcess = hub.GetAhpProcess();
+									ahpProcess.Limit += 200.0f;
 
-								case RoleType.Scp93989:
-									if (hub.playerId == Scp682id)
-										hub.hints.Show(new TextHint("<b>强化失败, <color=#FF0000>SCP-682</color>不能进行强化!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									else if (hub.playerStats.maxHP != Scp939MaxHP2)
-									{
-										hub.playerStats.maxHP = Scp939MaxHP2;
-										SetScpBadge(hub.serverRoles, "SCP-939-89");
-										hub.playerStats.artificialHpDecay = -1.25f;
-										hub.hints.Show(new TextHint("<b>强化成功!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									}
-									else
-										hub.hints.Show(new TextHint("<b>强化失败!</b>", new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-									break;
-							}
+									PluginEx.SetServerBadge(hub.serverRoles, "SCP-096");
+									hub.hints.Show(
+										new TextHint("<b>强化成功!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+								}
+								else
+									hub.hints.Show(
+										new TextHint("<b>强化失败!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								break;
+
+							case RoleType.Scp106:
+								if (healthController.Evolved)
+								{
+									healthController.Evolved = true;
+									healthController.MaxHealth = healthController.MaxHealth + 300.0f;
+									healthController.Health += 300.0f;
+
+									PluginEx.SetServerBadge(hub.serverRoles, "SCP-106");
+									hub.hints.Show(
+										new TextHint("<b>强化成功!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+								}
+								else
+									hub.hints.Show(
+										new TextHint("<b>强化失败!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								break;
+
+							case RoleType.Scp173:
+								if (healthController.Evolved)
+								{
+									healthController.Evolved = true;
+									hub.playerEffectsController.GetEffect<Scp207>().Intensity = 4;
+									
+									PluginEx.SetServerBadge(hub.serverRoles, "SCP-173");
+									hub.hints.Show(
+										new TextHint("<b>强化成功!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+								}
+								else
+									hub.hints.Show(
+										new TextHint("<b>强化失败!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								break;
+
+							case RoleType.Scp93953:
+							case RoleType.Scp93989:
+								if (hub.playerId == Scp682id)
+									hub.hints.Show(
+										new TextHint("<b>强化失败!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								else if (healthController.Evolved)
+								{
+									healthController.Evolved = true;
+									healthController.MaxHealth = healthController.MaxHealth + 200.0f;
+									healthController.Health += 200.0f;
+
+									AhpStat.AhpProcess ahpProcess = hub.GetAhpProcess();
+									ahpProcess.Limit += 150.0f;
+
+									PluginEx.SetServerBadge(hub.serverRoles, hub.characterClassManager.NetworkCurClass == RoleType.Scp93953 ? "SCP-939-53" : "SCP-939-89");
+									hub.hints.Show(
+										new TextHint("<b>强化成功!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+								}
+								else
+									hub.hints.Show(
+										new TextHint("<b>强化失败!</b>",
+										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
+								break;
+						}
 						break;
 				}
 			}
@@ -1794,6 +1861,10 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnTriggerTrapItem(ReferenceHub victim)
 		{
+			victim.hints.Show(
+				new TextHint("<b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b>",
+				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+
 			victim.inventory.NetworkCurItem = ItemIdentifier.None;
 			victim.scp106PlayerScript.TeleportAnimation();
 			victim.scp106PlayerScript.goingViaThePortal = true;
@@ -1802,20 +1873,13 @@ namespace CommonPlugin
 
 			victim.playerEffectsController.EnableEffect<Corroding>(0.0f, false);
 			victim.scp106PlayerScript.goingViaThePortal = false;
-			victim.hints.Show(
-				new TextHint("<b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b>",
-				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
-
-			/*
+			
 			foreach (GameObject gameObject in PlayerManager.players)
 			{
-				ReferenceHub hub = GetReferenceHub(gameObject);
+				ReferenceHub hub = ReferenceHub.GetHub(gameObject);
 				if (hub.characterClassManager.NetworkCurClass == RoleType.Scp106)
 					Timing.RunCoroutine(Timing_SendMessage(MessageType.Person, hub.playerId, $"<color=#FFFF00>{victim.nicknameSync.MyNick}</color>触发了你的<color=#FF0000>诱捕陷阱</color>", 5));
 			}
-			*/
-
-			yield break;
 		}
 
 		private IEnumerator<float> Timing_OnPocketDimensionDie()

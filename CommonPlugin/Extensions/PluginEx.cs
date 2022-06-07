@@ -179,7 +179,7 @@ namespace CommonPlugin.Extensions
 			EventHandlers.Scp181id = hub.playerId;
 			SetServerBadge(hub.serverRoles, "SCP-181");
 
-			hub.inventory.ServerDropAll();
+			hub.inventory.RemoveAllItems();
 			hub.inventory.ServerAddItem(ItemType.Flashlight);
 			hub.inventory.ServerAddItem(ItemType.SCP500);
 			hub.inventory.ServerAddItem(ItemType.SCP268);
@@ -209,9 +209,9 @@ namespace CommonPlugin.Extensions
 				$"<size=35><b>你拥有正常视野, 极高的伤害和极强的生命力, 按住V键时可以直接破坏门或检查点</b></size></voffset>",
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 
-			Timing.CallDelayed(0.1f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
-			Timing.CallDelayed(1.0f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
-			Timing.CallDelayed(2.0f, () => { hub.playerEffectsController.GetEffect<Visuals939>().ServerDisable(); });
+			Timing.CallDelayed(Timing.WaitForOneFrame, () => { hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0; });
+			Timing.CallDelayed(0.25f, () => { hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0; });
+			Timing.CallDelayed(1.05f, () => { hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0; });
 		}
 
 		public static void SetServerBadge(ServerRoles serverRoles, string badgeName, string badgeColor = "red")
@@ -272,5 +272,5 @@ namespace CommonPlugin.Extensions
 
 			return itemPickupBase;
 		}
-	}
+    }
 }
