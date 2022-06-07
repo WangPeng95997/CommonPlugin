@@ -10,12 +10,12 @@ using UnityEngine;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(QueryProcessor), "ProcessGameConsoleQuery", new Type[] { typeof(string), typeof(bool) })]
+    [HarmonyPatch(typeof(QueryProcessor), "ProcessGameConsoleQuery", typeof(string))]
     internal static class QueryProcessorPatch
     {
-        private static readonly System.Random rng = new System.Random();
+        private static readonly System.Random Random = new System.Random();
 
-        private static bool Prefix(QueryProcessor __instance, string query, bool encrypted)
+        private static bool Prefix(QueryProcessor __instance, string query)
         {
             ReferenceHub hub = ReferenceHub.GetHub(__instance.gameObject);
 
@@ -351,7 +351,7 @@ namespace CommonPlugin.Patches
                             case "administrator":
                                 if (EventHandlers.Scp682id == 0)
                                 {
-                                    ReferenceHub referenceHub = EventHandlers.GetReferenceHub(int.Parse(args[1]));
+                                    ReferenceHub referenceHub = ReferenceHub.GetHub(int.Parse(args[1]));
                                     if (referenceHub != null)
                                     {
                                         referenceHub.characterClassManager.SetPlayersClass(RoleType.Spectator, referenceHub.gameObject);

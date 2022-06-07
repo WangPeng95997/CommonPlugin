@@ -7,7 +7,7 @@ using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(InventorySystem.Inventory), "UserCode_CmdProcessHotkey", typeof(ActionName), typeof(ushort))]
+    [HarmonyPatch(typeof(Inventory), "UserCode_CmdProcessHotkey", typeof(ActionName), typeof(ushort))]
     internal static class CmdProcessHotkeyPatch
     {
 		private static Plugin Plugin = PluginManager.Manager.Plugins[0];

@@ -24,6 +24,8 @@ namespace CommonPlugin.Extensions
 			}
 		}
 
+		
+
 		public static void FlickerLights(int minValue, int maxValue)
 		{
 			foreach (FlickerableLightController fc in Object.FindObjectsOfType<FlickerableLightController>())

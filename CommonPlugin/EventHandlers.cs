@@ -270,7 +270,6 @@ namespace CommonPlugin
 						case RoleType.NtfSergeant:
 						case RoleType.NtfSpecialist:
 						case RoleType.NtfCaptain:
-						
 							bEndRound = false;
 							break;
 					}
@@ -707,7 +706,7 @@ namespace CommonPlugin
 			foreach (Item item in items)
 				ev.ItemInputs.Remove(item);
 
-			Timing.RunCoroutine(Timing_OnScp914Activate(ev.PlayerInputs, ev.KnobSetting));
+			Timing.RunCoroutine(Timing_OnScp914Activate(ev.PlayerInputs, (Scp914KnobSetting)ev.KnobSetting));
 		}
 
 		public void OnSetRole(PlayerSetRoleEvent ev)
@@ -1000,6 +999,8 @@ namespace CommonPlugin
 
 		private IEnumerator<float> Timing_OnRoundStart()
 		{
+			yield return Timing.WaitForOneFrame;
+
             Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
 			GameObject ragdoll = PlayerManager.localPlayer;
 			ReferenceHub hub = ReferenceHub.GetHub(ragdoll);
@@ -1056,7 +1057,7 @@ namespace CommonPlugin
 
 			// 创建SCP-703
 			bScp703Activating = true;
-			Vector3 vector3 = new Vector3(0.0f, 0.0f, 0.0f);
+			Vector3 position = new Vector3(0.0f, 0.0f, 0.0f);
 			Pickup pickup = itemSpawner.SetPickup(ItemType.Flashlight, 0.0f, new Vector3(0.0f, 0.0f, 0.0f), Quaternion.Euler(Vector3.zero), 0, 0, 0);
 			Rigidbody rigidbody = pickup.GetComponent<Rigidbody>();
 			pickup.transform.localScale = Vector3.one * 8.5f;
@@ -1073,28 +1074,28 @@ namespace CommonPlugin
 				case 0.0f:
 					pickup.transform.position = new Vector3(postion.x + 13.4f, postion.y - 1.0f, postion.z);
 					pickup.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 270.0f);
-					vector3 = new Vector3(pickup.transform.position.x - 0.8f, 2.0f, pickup.transform.position.z);
+					position = new Vector3(pickup.transform.position.x - 0.8f, 2.0f, pickup.transform.position.z);
 					break;
 
 				case 90.0f:
 					pickup.transform.position = new Vector3(postion.x, postion.y - 1.0f, postion.z - 13.4f);
 					pickup.transform.rotation = Quaternion.Euler(180.0f, 90.0f, 90.0f);
-					vector3 = new Vector3(pickup.transform.position.x, 2.0f, pickup.transform.position.z + 0.8f);
+					position = new Vector3(pickup.transform.position.x, 2.0f, pickup.transform.position.z + 0.8f);
 					break;
 
 				case 180.0f:
 					pickup.transform.position = new Vector3(postion.x - 13.4f, postion.y - 1.0f, postion.z);
 					pickup.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 270.0f);
-					vector3 = new Vector3(pickup.transform.position.x + 0.8f, 2.0f, pickup.transform.position.z);
+					position = new Vector3(pickup.transform.position.x + 0.8f, 2.0f, pickup.transform.position.z);
 					break;
 
 				case 270.0f:
 					pickup.transform.position = new Vector3(postion.x, postion.y - 1.0f, postion.z + 13.4f);
 					pickup.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 270.0f);
-					vector3 = new Vector3(pickup.transform.position.x, 2.0f, pickup.transform.position.z - 0.8f);
+					position = new Vector3(pickup.transform.position.x, 2.0f, pickup.transform.position.z - 0.8f);
 					break;
 			}
-			Timing.RunCoroutine(Timing_OnScp703Activate(vector3));
+			Timing.RunCoroutine(Timing_OnScp703Activate(position));
 
 			// 选取所有的D级人员
 			int index = 0;
@@ -1128,7 +1129,7 @@ namespace CommonPlugin
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
 
-				if (Scp682id == 0 && PlayerManager.players.Count * 3.33 > Random.Next(100))
+				if (Scp682id == 0 && PlayerManager.players.Count * 3 > Random.Next(100))
 					PluginEx.SetScp682(hub);
 				else
 					hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
@@ -1155,29 +1156,30 @@ namespace CommonPlugin
 			}
 		}
 
-		private IEnumerator<float> Timing_OnScp703Activate(Vector3 vector3)
+		private IEnumerator<float> Timing_OnScp703Activate(Vector3 position)
         {
-            Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
-
 			while (!bRoundEnd && bScp703Activating)
 			{
 				ItemType itemType = (ItemType)Random.Next((int)ItemType.Coin);
 
 				switch (itemType)
 				{
-					case ItemType.Ammo556:
-					case ItemType.Ammo762:
-					case ItemType.Ammo9mm:
-						itemSpawner.SetPickup(itemType, 30.0f, vector3, Quaternion.Euler(Vector3.zero), 0, 0, 0);
+					case ItemType.Ammo12gauge:
+					case ItemType.Ammo556x45:
+					case ItemType.Ammo44cal:
+					case ItemType.Ammo762x39:
+					case ItemType.Ammo9x19:
+						PluginEx.SpawnItem(itemType, position, Quaternion.Euler(Vector3.zero), 20);
 						break;
 
 					default:
-						itemSpawner.SetPickup(itemType, 0.0f, vector3, Quaternion.Euler(Vector3.zero), 0, 0, 0);
+						PluginEx.SpawnItem(itemType, position, Quaternion.Euler(Vector3.zero));
 						break;
 				}
 
 				yield return Timing.WaitForSeconds(Random.Next(20, 30));
 			}
+
 			Scp703id = 0;
 
 			yield break;

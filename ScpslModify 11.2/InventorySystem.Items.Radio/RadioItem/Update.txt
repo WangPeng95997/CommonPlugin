@@ -1,0 +1,14 @@
+private void Update()
+{
+	if (NetworkServer.active && this.IsUsable)
+	{
+		if (this.smIsBatteryUnlimited)
+		{
+			this._battery = 100f;
+		}
+		if (Mathf.Abs((int)(this._lastSentBatteryLevel - this.BatteryPercent)) >= 1 && base.OwnerInventory.CurItem.TypeId == ItemType.Radio)
+		{
+			this.SendStatusMessage();
+		}
+	}
+}
