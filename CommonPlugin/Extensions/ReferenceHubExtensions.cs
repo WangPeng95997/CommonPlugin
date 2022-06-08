@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using PlayerStatsSystem;
+using UnityEngine;
+
 using CommonPlugin.Components;
 
 namespace CommonPlugin.Extensions

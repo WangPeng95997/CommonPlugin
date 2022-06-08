@@ -1,12 +1,8 @@
-﻿using System;
-using Smod2;
-using Smod2.API;
-using HarmonyLib;
-using RemoteAdmin;
-using Respawning;
-using MEC;
-using Mirror;
+﻿using RemoteAdmin;
 using UnityEngine;
+using HarmonyLib;
+
+using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
 {
@@ -45,7 +41,10 @@ namespace CommonPlugin.Patches
                                     SendMessage(__instance, MessageType.TeamChaos, hub.playerId, strText);
                                     break;
 
-                                case RoleType.ChaosInsurgency:
+                                case RoleType.ChaosConscript:
+                                case RoleType.ChaosRifleman:
+                                case RoleType.ChaosMarauder:
+                                case RoleType.ChaosRepressor:
                                     strText = $"[<color=#008F1E>混沌分裂者</color>]{hub.nicknameSync.MyNick}: {strText}";
                                     SendMessage(__instance, MessageType.TeamChaos, hub.playerId, strText);
                                     break;
@@ -60,23 +59,11 @@ namespace CommonPlugin.Patches
                                     SendMessage(__instance, MessageType.TeamMtf, hub.playerId, strText);
                                     break;
 
-                                case RoleType.NtfCadet:
-                                    strText = $"[<color=#00B7EB>九尾狐新兵</color>]{hub.nicknameSync.MyNick}: {strText}";
-                                    SendMessage(__instance, MessageType.TeamMtf, hub.playerId, strText);
-                                    break;
-
-                                case RoleType.NtfLieutenant:
-                                    strText = $"[<color=#005EBC>九尾狐士官</color>]{hub.nicknameSync.MyNick}: {strText}";
-                                    SendMessage(__instance, MessageType.TeamMtf, hub.playerId, strText);
-                                    break;
-
-                                case RoleType.NtfScientist:
-                                    strText = $"[<color=#005EBC>九尾狐科学家</color>]{hub.nicknameSync.MyNick}: {strText}";
-                                    SendMessage(__instance, MessageType.TeamMtf, hub.playerId, strText);
-                                    break;
-
-                                case RoleType.NtfCommander:
-                                    strText = $"[<color=#002DB3>九尾狐指挥官</color>]{hub.nicknameSync.MyNick}: {strText}";
+                                case RoleType.NtfPrivate:
+                                case RoleType.NtfSergeant:
+                                case RoleType.NtfSpecialist:
+                                case RoleType.NtfCaptain:
+                                    strText = $"[<color=#005EBC>九尾狐</color>]{hub.nicknameSync.MyNick}: {strText}";
                                     SendMessage(__instance, MessageType.TeamMtf, hub.playerId, strText);
                                     break;
 
@@ -131,12 +118,8 @@ namespace CommonPlugin.Patches
                                     SendMessage(__instance, MessageType.TeamSpectator, hub.playerId, strText);
                                     break;
 
-                                case RoleType.Tutorial:
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败, 教程角色只能使用.bc发送全体消息!", "red");
-                                    break;
-
                                 default:
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败, 未知阵营!", "red");
+                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败! 未知阵营...", "red");
                                     break;
                             }
                     }
@@ -164,7 +147,10 @@ namespace CommonPlugin.Patches
                                     SendMessage(__instance, MessageType.All, hub.playerId, strText);
                                     break;
 
-                                case RoleType.ChaosInsurgency:
+                                case RoleType.ChaosConscript:
+                                case RoleType.ChaosRifleman:
+                                case RoleType.ChaosMarauder:
+                                case RoleType.ChaosRepressor:
                                     strText = $"[<color=#008F1E>混沌分裂者</color>]{hub.nicknameSync.MyNick}: {strText}";
                                     SendMessage(__instance, MessageType.All, hub.playerId, strText);
                                     break;
@@ -179,23 +165,11 @@ namespace CommonPlugin.Patches
                                     SendMessage(__instance, MessageType.All, hub.playerId, strText);
                                     break;
 
-                                case RoleType.NtfCadet:
-                                    strText = $"[<color=#00B7EB>九尾狐新兵</color>] {hub.nicknameSync.MyNick}: {strText}";
-                                    SendMessage(__instance, MessageType.All, hub.playerId, strText);
-                                    break;
-
-                                case RoleType.NtfLieutenant:
-                                    strText = $"[<color=#005EBC>九尾狐士官</color>]{hub.nicknameSync.MyNick}: {strText}";
-                                    SendMessage(__instance, MessageType.All, hub.playerId, strText);
-                                    break;
-
-                                case RoleType.NtfScientist:
-                                    strText = $"[<color=#005EBC>九尾狐科学家</color>]{hub.nicknameSync.MyNick}: {strText}";
-                                    SendMessage(__instance, MessageType.All, hub.playerId, strText);
-                                    break;
-
-                                case RoleType.NtfCommander:
-                                    strText = $"[<color=#002DB3>九尾狐指挥官</color>]{hub.nicknameSync.MyNick}: {strText}";
+                                case RoleType.NtfPrivate:
+                                case RoleType.NtfSergeant:
+                                case RoleType.NtfSpecialist:
+                                case RoleType.NtfCaptain:
+                                    strText = $"[<color=#005EBC>九尾狐</color>]{hub.nicknameSync.MyNick}: {strText}";
                                     SendMessage(__instance, MessageType.All, hub.playerId, strText);
                                     break;
 
@@ -246,7 +220,7 @@ namespace CommonPlugin.Patches
                                     break;
 
                                 case RoleType.Spectator:
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败, 观察者不能发送全体消息!", "red");
+                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败! 观察者不能进行全体聊天...", "red");
                                     break;
 
                                 case RoleType.Tutorial:
@@ -255,7 +229,7 @@ namespace CommonPlugin.Patches
                                     break;
 
                                 default:
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败, 未知阵营!", "red");
+                                    __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败! 未知阵营...", "red");
                                     break;
                             }
                     }
@@ -272,19 +246,22 @@ namespace CommonPlugin.Patches
                             break;
 
                         default:
-                            __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败, 你没有该权限! .c 团队消息  .bc 全体消息", "red");
+                            __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败! 你没有该权限...", "red");
                             break;
                     }
                     break;
 
                 case "scp":
-                    if (hub.characterClassManager.NetworkCurClass == RoleType.Scp079 && PluginManager.Manager.Server.Round.Duration <= EventHandlers.Scp079SwitchTime)
+                    if (hub.characterClassManager.NetworkCurClass == RoleType.Scp079 && EventHandlers.Scp079id == 0)
                     {
-                        Timing.RunCoroutine(EventHandlers.Timing_SetRandomScp(hub));
+                        if (EventHandlers.Scp682id == 0 && PlayerManager.players.Count * 2.5 > Random.Next(100))
+                            PluginEx.SetScp682(hub);
+                        else
+                            hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
                         hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, "SCP更换成功!", "green");
                     }
                     else
-                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP更换失败!", "red");
+                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP更换失败...", "red");
                     break;
 
                 case "scp035":
@@ -295,21 +272,21 @@ namespace CommonPlugin.Patches
                             case "administrator":
                                 if (EventHandlers.Scp035id == 0)
                                 {
-                                    ReferenceHub referenceHub = EventHandlers.GetReferenceHub(int.Parse(args[1]));
+                                    ReferenceHub referenceHub = PluginEx.GetHub(int.Parse(args[1]));
                                     if (referenceHub != null)
                                     {
-                                        EventHandlers.SetScp035(referenceHub);
-                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建成功!", "red");
+                                        PluginEx.SetScp035(referenceHub);
+                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建成功!", "green");
                                     }
                                     else
-                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败, 未找到对应的玩家!", "red");
+                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 未找到对应的玩家...", "red");
                                 }
                                 else
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败, 当前场上存在相同的SCP!", "red");
+                                    __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 当前场上存在相同的SCP...", "red");
                                 break;
 
                             default:
-                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败, 你没有对应的权限!", "red");
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 你没有该权限...", "red");
                                 break;
                         }
                     }
@@ -323,21 +300,21 @@ namespace CommonPlugin.Patches
                             case "administrator":
                                 if (EventHandlers.Scp181id == 0)
                                 {
-                                    ReferenceHub referenceHub = EventHandlers.GetReferenceHub(int.Parse(args[1]));
+                                    ReferenceHub referenceHub = PluginEx.GetHub(int.Parse(args[1]));
                                     if (referenceHub != null)
                                     {
-                                        EventHandlers.SetScp181(referenceHub);
-                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建成功!", "red");
+                                        PluginEx.SetScp181(referenceHub);
+                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建成功!", "green");
                                     }
                                     else
-                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建失败, 未找到对应的玩家!", "red");
+                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建失败! 未找到对应的玩家...", "red");
                                 }
                                 else
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建失败, 当前场上存在相同的SCP!", "red");
+                                    __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建失败! 当前场上存在相同的SCP...", "red");
                                 break;
 
                             default:
-                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败, 你没有对应的权限!", "red");
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败! 你没有该权限...", "red");
                                 break;
                         }
                     }
@@ -351,29 +328,28 @@ namespace CommonPlugin.Patches
                             case "administrator":
                                 if (EventHandlers.Scp682id == 0)
                                 {
-                                    ReferenceHub referenceHub = ReferenceHub.GetHub(int.Parse(args[1]));
+                                    ReferenceHub referenceHub = PluginEx.GetHub(int.Parse(args[1]));
                                     if (referenceHub != null)
                                     {
-                                        referenceHub.characterClassManager.SetPlayersClass(RoleType.Spectator, referenceHub.gameObject);
-                                        EventHandlers.SetScp682(referenceHub);
-                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建成功!", "red");
+                                        PluginEx.SetScp682(referenceHub);
+                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建成功!", "green");
                                     }
                                     else
-                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建失败, 未找到对应的玩家!", "red");
+                                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建失败! 未找到对应的玩家...", "red");
                                 }
                                 else
-                                    __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建失败, 当前场上存在相同的SCP!", "red");
+                                    __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建失败! 当前场上存在相同的SCP...", "red");
                                 break;
 
                             default:
-                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败, 你没有对应的权限!", "red");
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败! 你没有该权限...", "red");
                                 break;
                         }
                     }
                     break;
 
                 default:
-                    __instance.GCT.SendToClient(__instance.connectionToClient, "无效的指令! .c 团队消息  .bc 全体消息", "red");
+                    __instance.GCT.SendToClient(__instance.connectionToClient, "无效的指令!\n.c 团队聊天  .bc 全体聊天", "red");
                     break;
             }
 
@@ -386,16 +362,16 @@ namespace CommonPlugin.Patches
 
             if (cooldown < 5.0f)
             {
-                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, $"发送失败, 请在{5 - (int)cooldown}秒后再试!", "red");
+                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, $"发送失败! 请在{5 - (int)cooldown}秒后再试...", "red");
                 return false;
             }
-            else if (hub.characterClassManager.Muted)
+            else if (hub.dissonanceUserSetup.AdministrativelyMuted)
             {
-                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, "发送失败, 您已被管理员禁言!", "red");
+                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, "发送失败! 您已被管理员禁言...", "red");
                 return false;
             }
-
             hub.playerMovementSync.AFKTime = Time.time;
+
             return true;
         }
 
@@ -406,7 +382,7 @@ namespace CommonPlugin.Patches
                 case MessageType.All:
                     foreach (PersonMessage personMessage in MessageQueue.Messages.Values)
                         personMessage.TextDisplay.Add(new Message(strText, duration));
-                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "全体消息发送成功!", "green");
+                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "发送成功!", "green");
                     break;
 
                 case MessageType.Person:
@@ -421,15 +397,15 @@ namespace CommonPlugin.Patches
                         {
                             case RoleType.Scientist:
                             case RoleType.FacilityGuard:
-                            case RoleType.NtfCadet:
-                            case RoleType.NtfLieutenant:
-                            case RoleType.NtfScientist:
-                            case RoleType.NtfCommander:
+                            case RoleType.NtfPrivate:
+                            case RoleType.NtfSergeant:
+                            case RoleType.NtfSpecialist:
+                            case RoleType.NtfCaptain:
                                 if (personMessage.PlayerId != EventHandlers.Scp035id)
                                     personMessage.TextDisplay.Add(new Message(strText, duration));
                                 break;
                         }
-                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "团队消息发送成功!", "green");
+                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "发送成功!", "green");
                     break;
 
                 case MessageType.TeamChaos:
@@ -437,12 +413,15 @@ namespace CommonPlugin.Patches
                         switch (personMessage.Hub.characterClassManager.NetworkCurClass)
                         {
                             case RoleType.ClassD:
-                            case RoleType.ChaosInsurgency:
+                            case RoleType.ChaosConscript:
+                            case RoleType.ChaosRifleman:
+                            case RoleType.ChaosMarauder:
+                            case RoleType.ChaosRepressor:
                                 if (personMessage.PlayerId != EventHandlers.Scp035id)
                                     personMessage.TextDisplay.Add(new Message(strText, duration));
                                 break;
                         }
-                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "团队消息发送成功!", "green");
+                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "发送成功!", "green");
                     break;
 
                 case MessageType.TeamScp:
@@ -465,20 +444,20 @@ namespace CommonPlugin.Patches
                                     personMessage.TextDisplay.Add(new Message(strText, duration));
                                 break;
                         }
-                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "团队消息发送成功!", "green");
+                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "发送成功!", "green");
                     break;
 
                 case MessageType.TeamSpectator:
                     foreach (PersonMessage personMessage in MessageQueue.Messages.Values)
                         if (personMessage.Hub.characterClassManager.NetworkCurClass == RoleType.Spectator)
                             personMessage.TextDisplay.Add(new Message(strText, duration));
-                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "团队消息发送成功!", "green");
+                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "发送成功!", "green");
                     break;
 
                 case MessageType.AdminChat:
                     foreach (PersonMessage personMessage in MessageQueue.Messages.Values)
                         personMessage.TextDisplay.Add(new Message(strText, duration));
-                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "管理员消息发送成功!", "magenta");
+                    queryProcessor.GCT.SendToClient(queryProcessor.connectionToClient, "发送成功!", "magenta");
                     break;
             }
         }

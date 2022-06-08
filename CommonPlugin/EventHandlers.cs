@@ -110,7 +110,7 @@ namespace CommonPlugin
 
 		public static bool bScp035Detected;
 
-		public const int Scp079SwitchTime = 30;
+		public const int Scp079ChangeTime = 30;
 
 		private const float MedkitHeal = 70.0f;
 
@@ -1001,34 +1001,44 @@ namespace CommonPlugin
 		{
 			yield return Timing.WaitForOneFrame;
 
-            Inventory itemSpawner = GameObject.Find("Host").GetComponent<Inventory>();
-			GameObject ragdoll = PlayerManager.localPlayer;
-			ReferenceHub hub = ReferenceHub.GetHub(ragdoll);
-			Role role = hub.characterClassManager.Classes.SafeGet((int)RoleType.ClassD);
-			PlayerStats.HitInfo ragdollInfo = new PlayerStats.HitInfo(10000.0f, "SCP-173", DamageTypes.Scp173, hub.playerId);
-			Quaternion ratation = Quaternion.Euler(new Vector3(ragdoll.transform.rotation.x, ragdoll.transform.rotation.y, ragdoll.transform.rotation.z));
+			GameObject gameObject = PlayerManager.localPlayer;
+			ReferenceHub hub = ReferenceHub.GetHub(gameObject);
+			string originalName = hub.nicknameSync.DisplayName;
 
 			// SCP-173收容室彩蛋
-			ragdoll = Object.Instantiate(role.model_ragdoll, MapManager.Scp173Room.Position + role.ragdoll_offset.position, Quaternion.Euler(ratation.eulerAngles + role.ragdoll_offset.rotation));
-			NetworkServer.Spawn(ragdoll);
-			Ragdoll component = ragdoll.GetComponent<Ragdoll>();
-			component.Networkowner = new Ragdoll.Info("萌新天堂服主", "萌新天堂服主", ragdollInfo, role, hub.playerId);
-			component.NetworkallowRecall = false;
-			component.NetworkPlayerVelo = Vector3.zero;
+			hub.nicknameSync.DisplayName = "萌新天堂服主";
+			DamageHandlerBase damageHandlerBase = new UniversalDamageHandler(10000.0f, DeathTranslations.Scp173, null);
 
-			// SCP-173收容室刷新物品
-			itemSpawner.SetPickup(ItemType.GunUSP, 0.0f, MapManager.Scp173Room.Position, Quaternion.Euler(Vector3.zero), 0, 0, 0);
+			gameObject = hub.characterClassManager.Classes.SafeGet((int)RoleType.ClassD).model_ragdoll;
+			gameObject.transform.localPosition = MapManager.Scp173Room.Position;
+			gameObject.transform.localRotation = Quaternion.Euler(Vector3.zero);
+
+			Ragdoll ragdoll = Object.Instantiate(gameObject).GetComponent<Ragdoll>();
+			ragdoll.NetworkInfo = new RagdollInfo(hub, damageHandlerBase, gameObject.transform.localPosition, gameObject.transform.localRotation);
+
+			NetworkServer.Spawn(gameObject);
+			PluginEx.SpawnItem(ItemType.GunRevolver, MapManager.Scp173Room.Position, Quaternion.Euler(Vector3.zero));
 
 			// SCP-012收容室彩蛋
-			role = hub.characterClassManager.Classes.SafeGet((int)RoleType.Scientist);
-			ragdoll = Object.Instantiate(role.model_ragdoll, MapManager.Scp012Room.Position + role.ragdoll_offset.position, Quaternion.Euler(ratation.eulerAngles + role.ragdoll_offset.rotation));
-			NetworkServer.Spawn(ragdoll);
+			hub.nicknameSync.DisplayName = "亮亮博士";
+			damageHandlerBase = new UniversalDamageHandler(10000.0f, DeathTranslations.Bleeding, null);
+
+			gameObject = hub.characterClassManager.Classes.SafeGet((int)RoleType.Scientist).model_ragdoll;
+			gameObject.transform.localPosition = MapManager.Scp012Room.Position;
+			gameObject.transform.localRotation = Quaternion.Euler(Vector3.zero);
+
+			ragdoll = Object.Instantiate(gameObject).GetComponent<Ragdoll>();
+			ragdoll.NetworkInfo = new RagdollInfo(hub, damageHandlerBase, gameObject.transform.localPosition, gameObject.transform.localRotation);
+
+			NetworkServer.Spawn(gameObject);
+
+
 			ragdollInfo = new PlayerStats.HitInfo(10000.0f, "SCP-012", DamageTypes.Bleeding, hub.playerId);
-			component = ragdoll.GetComponent<Ragdoll>();
+			component = gameObject.GetComponent<Ragdoll>();
 			component.Networkowner = new Ragdoll.Info("亮亮博士", "亮亮博士", ragdollInfo, role, hub.playerId);
 			component.NetworkallowRecall = false;
 			component.NetworkPlayerVelo = Vector3.zero;
-
+			/*
 			// SCP-012收容室刷新物品
 			Vector3 postion = MapManager.Scp012Room.Position;
 			itemSpawner.SetPickup(ItemType.KeycardScientist, 0.0f, postion, Quaternion.Euler(Vector3.zero), 0, 0, 0);
@@ -1129,16 +1139,17 @@ namespace CommonPlugin
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
 
-				if (Scp682id == 0 && PlayerManager.players.Count * 3 > Random.Next(100))
+				if (Scp682id == 0 && PlayerManager.players.Count * 2.5 > Random.Next(100))
 					PluginEx.SetScp682(hub);
 				else
 					hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
 			}
+			*/
 		}
 
 		private IEnumerator<float> Timing_OnScp079SwitchTime(ReferenceHub hub)
 		{
-			for (int i = Scp079SwitchTime; i > 0 && hub.characterClassManager.NetworkCurClass == RoleType.Scp079; i--)
+			for (int i = Scp079ChangeTime; i > 0 && hub.characterClassManager.NetworkCurClass == RoleType.Scp079; i--)
 			{
 				hub.hints.Show(
 					new TextHint($"<b>你还有<color=#FF0000>{i}</color>秒可以在控制台输入<color=#FF0000>.scp</color>指令随机成为其他SCP</b>",
