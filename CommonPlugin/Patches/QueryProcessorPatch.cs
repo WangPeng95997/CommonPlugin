@@ -254,7 +254,7 @@ namespace CommonPlugin.Patches
                 case "scp":
                     if (hub.characterClassManager.NetworkCurClass == RoleType.Scp079 && EventHandlers.Scp079id == 0)
                     {
-                        if (EventHandlers.Scp682id == 0 && PlayerManager.players.Count * 2.5 > Random.Next(100))
+                        if (EventHandlers.Scp682id == 0 && PlayerManager.players.Count * 2 > Random.Next(100))
                             PluginEx.SetScp682(hub);
                         else
                             hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);

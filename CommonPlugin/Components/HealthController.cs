@@ -61,6 +61,8 @@ namespace CommonPlugin.Components
 
             this.Evolved = false;
             this.MaxHealth = this.MaxHealth2;
+            this.Heal = 0;
+            this.Heal2 = 0;
         }
 
         private void OnEnable()

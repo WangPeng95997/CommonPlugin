@@ -1,4 +1,7 @@
-﻿using Hints;
+﻿using System.Linq;
+using System.Text;
+
+using Hints;
 using InventorySystem;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms;
@@ -6,6 +9,7 @@ using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Pickups;
 using MEC;
 using Mirror;
+using Respawning;
 using UnityEngine;
 
 namespace CommonPlugin.Extensions
@@ -13,6 +17,18 @@ namespace CommonPlugin.Extensions
     public class PluginEx
 	{
 		private static System.Random Random = new System.Random();
+
+		public static void CassieMessage(string message, string translation)
+        {
+			StringBuilder annoucement = new StringBuilder();
+
+			string[] cassies = message.Split('\n');
+			string[] translations = translation.Split('\n');
+			for (int i = 0; i < cassies.Count(); i++)
+				annoucement.Append($"{translations[i].Replace(' ', ' ')}<alpha=#00> {cassies[i]} </alpha><split>");
+
+			RespawnEffectsController.PlayCassieAnnouncement(annoucement.ToString(), false, true, true);
+		}
 
 		public static void ClearServerBadge(ServerRoles serverRoles, string badgeColor = "default")
 		{

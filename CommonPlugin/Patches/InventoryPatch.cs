@@ -12,7 +12,7 @@ namespace CommonPlugin.Patches
     {
 		private static Plugin Plugin = PluginManager.Manager.Plugins[0];
 
-		private const int Cooldown = EventHandlers.Scp106Cooldown;
+		private const int Scp106Cooldown = EventHandlers.Scp106Cooldown;
 
 		private static bool Prefix(InventorySystem.Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)
         {
@@ -22,7 +22,7 @@ namespace CommonPlugin.Patches
             {
 				int duration = Plugin.Server.Round.Duration - EventHandlers.Scp106LastPlace;
 
-				if (duration > Cooldown)
+				if (duration > Scp106Cooldown)
 				{
 					PluginEx.PlaceTrapItem(hub.transform.position);
 
@@ -33,7 +33,7 @@ namespace CommonPlugin.Patches
 				}
 				else
 					hub.hints.Show(
-						new TextHint($"<b>还需要<color=#FF0000>{Cooldown - duration}</color>秒才能放置诱捕陷阱</b>",
+						new TextHint($"<b>还需要<color=#FF0000>{Scp106Cooldown - duration}</color>秒才能放置诱捕陷阱</b>",
 						new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 
 				return false;
