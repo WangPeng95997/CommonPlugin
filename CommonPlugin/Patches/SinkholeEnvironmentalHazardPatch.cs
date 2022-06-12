@@ -3,6 +3,7 @@ using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
+    /*
     [HarmonyPatch(typeof(SinkholeEnvironmentalHazard), "DistanceChanged", typeof(GameObject))]
     internal static class SinkholeEnvironmentalHazardPatch
     {
@@ -11,4 +12,5 @@ namespace CommonPlugin.Patches
             return ReferenceHub.GetHub(player).playerId != EventHandlers.Scp035id;
         }
     }
+    */
 }

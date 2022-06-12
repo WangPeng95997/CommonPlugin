@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Mirror;
+using UnityEngine;
 using Smod2;
 using Smod2.API;
 using HarmonyLib;
@@ -19,18 +20,18 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CharacterClassManager), "TargetRawDeathScreen")]
+    [HarmonyPatch(typeof(CharacterClassManager), "TargetRawDeathScreen", typeof(NetworkConnection))]
     internal static class TargetRawDeathScreenPatch
     {
         private static Round Round = PluginManager.Manager.Server.Round;
 
         private const int lateJoinTime = EventHandlers.lateJoinTime;
 
-        private static bool Prefix(CharacterClassManager __instance)
+        private static bool Prefix(CharacterClassManager __instance, NetworkConnection conn)
         {
             bool bSpawnClass = Round.Duration < lateJoinTime;
             if (bSpawnClass)
-                __instance.SetPlayersClass(RoleType.ClassD, __instance.gameObject, CharacterClassManager.SpawnReason.LateJoin);
+                __instance.SetClassIDAdv(RoleType.ClassD, false, CharacterClassManager.SpawnReason.LateJoin);
 
             return !bSpawnClass;
         }

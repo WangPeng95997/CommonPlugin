@@ -1,14 +1,15 @@
 ﻿using System.Linq;
 using System.Text;
-
 using Hints;
 using InventorySystem;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Pickups;
+using InventorySystem.Items.MicroHID;
 using MEC;
 using Mirror;
+using PlayerStatsSystem;
 using Respawning;
 using UnityEngine;
 
@@ -193,10 +194,9 @@ namespace CommonPlugin.Extensions
 			EventHandlers.Scp035id = hub.playerId;
 			EventHandlers.bScp035Detected = false;
 
-			hub.GetAhpProcess().Limit = 35.0f;
 			hub.hints.Show(
-				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-035</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
-				$"<size=35><b>你拥有极高的子弹抗性, 与其他<color=#FF0000>SCP</color>合作, 消灭所有人类</b></size></voffset>",
+				new TextHint($"<voffset=10em><size=220><color=#FF0000><b>SCP-035</b></color></size></voffset>" +
+				$"\n\n\n\n<size=30><b>你拥有极高的子弹抗性, 与其他<color=#FF0000>SCP</color>合作, 消灭所有人类</b></size>",
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 		}
 
@@ -216,29 +216,28 @@ namespace CommonPlugin.Extensions
 
 			SetServerBadge(hub.serverRoles, "SCP-181");
 			hub.hints.Show(
-				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-181</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
-				$"<size=35><b>你有几率打开任何门, 背包里的每件物品都能为你抵挡一次来自<color=#FF0000>SCP</color>的伤害</b></size></voffset>",
+				new TextHint($"<voffset=10em><size=220><color=#FF0000><b>SCP-181</b></color></size></voffset>" +
+				$"\n\n\n\n<size=30><b>你有几率打开任何门, 背包里的每件物品都能为你抵挡一次来自<color=#FF0000>SCP</color>的伤害</b></size>",
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 		}
 
 		public static void SetScp682(ReferenceHub hub)
 		{
 			EventHandlers.Scp682id = hub.playerId;
-
-			if (Random.Next(2) == 0)
-				hub.characterClassManager.SetPlayersClass(RoleType.Scp93953, hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
-			else
-				hub.characterClassManager.SetPlayersClass(RoleType.Scp93989, hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
+			hub.characterClassManager.SetClassIDAdv(Random.Next(2) == 0 ? RoleType.Scp93953 : RoleType.Scp93989, false, CharacterClassManager.SpawnReason.ForceClass);
 
 			SetServerBadge(hub.serverRoles, "SCP-682");
 			hub.hints.Show(
-				new TextHint($"<voffset=27em><size=120><color=#FF0000><b>SCP-682</b></color></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
-				$"<size=35><b>你拥有正常视野, 极高的伤害和极强的生命力, 按住V键时可以直接破坏门或检查点</b></size></voffset>",
+				new TextHint($"<voffset=10em><size=220><color=#FF0000><b>SCP-682</b></color></size></voffset>" +
+				$"\n\n\n<size=30><b>你拥有正常视野, 极高的伤害, 生命值和生命恢复速度\n按住V键时可以直接摧毁门或检查点</b></size>",
 				new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 
-			Timing.CallDelayed(Timing.WaitForOneFrame, () => { hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0; });
-			Timing.CallDelayed(0.25f, () => { hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0; });
-			Timing.CallDelayed(1.05f, () => { hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0; });
+			Timing.CallDelayed(0.25f, () => {
+				AhpStat.AhpProcess ahpProcess = hub.GetAhpProcess();
+				ahpProcess.Limit = 0;
+				ahpProcess.CurrentAmount = 0;
+				hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0;
+			});
 		}
 
 		public static void SetServerBadge(ServerRoles serverRoles, string badgeName, string badgeColor = "red")
@@ -261,7 +260,6 @@ namespace CommonPlugin.Extensions
 			{
 				// WeaponType
 				case ItemType.GunCOM15:
-				case ItemType.MicroHID:
 				case ItemType.GunE11SR:
 				case ItemType.GunCrossvec:
 				case ItemType.GunFSP9:
@@ -271,7 +269,12 @@ namespace CommonPlugin.Extensions
 				case ItemType.GunAK:
 				case ItemType.GunShotgun:
 				case ItemType.ParticleDisruptor:
-					(itemPickupBase as FirearmPickup).NetworkStatus = new FirearmStatus((byte)ammo, FirearmStatusFlags.None, 0);
+					FirearmPickup firearmPickup = itemPickupBase as FirearmPickup;
+					firearmPickup.NetworkStatus = new FirearmStatus((byte)ammo, firearmPickup.NetworkStatus.Flags, firearmPickup.NetworkStatus.Attachments);
+					break;
+
+				case ItemType.MicroHID:
+					(itemPickupBase as MicroHIDPickup).NetworkEnergy = ammo;
 					break;
 
 				// AmmoType
@@ -299,5 +302,5 @@ namespace CommonPlugin.Extensions
 
 			return itemPickupBase;
 		}
-    }
+	}
 }

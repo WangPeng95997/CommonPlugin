@@ -1,13 +1,13 @@
-﻿using MEC;
+﻿using System;
+using MEC;
 using Mirror;
 using PlayerStatsSystem;
-using System;
 using UnityEngine;
 using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(ServerRoles), "CallCmdServerSignatureComplete", typeof(string), typeof(string), typeof(string), typeof(bool))]
+    [HarmonyPatch(typeof(ServerRoles), "UserCode_CmdServerSignatureComplete", typeof(string), typeof(string), typeof(string), typeof(bool))]
     internal static class ServerRolesPatch
     {
         public static Vector3 startPostion = Vector3.zero;
@@ -40,10 +40,10 @@ namespace CommonPlugin.Patches
             switch (Convert.ToInt32(tf.rotation.eulerAngles.y))
             {
                 case 180:
-                    return new Vector3(postion.x + 9.34f, -596.6f, postion.z - 10.58f);
+                    return new Vector3(postion.x + 9.4f, -597.3f, postion.z - 10.6f);
 
                 case 270:
-                    return new Vector3(postion.x - 10.55f, -596.8f, postion.z - 9.39f);
+                    return new Vector3(postion.x - 10.55f, -597.3f, postion.z - 9.35f);
 
                 default:
                     return defaultPostion;

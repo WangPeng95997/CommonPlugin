@@ -1,8 +1,11 @@
-﻿using RemoteAdmin;
+﻿using Hints;
+using RemoteAdmin;
 using UnityEngine;
 using HarmonyLib;
-
 using CommonPlugin.Extensions;
+
+using InventorySystem.Items.Pickups;
+using Mirror;
 
 namespace CommonPlugin.Patches
 {
@@ -10,6 +13,8 @@ namespace CommonPlugin.Patches
     internal static class QueryProcessorPatch
     {
         private static readonly System.Random Random = new System.Random();
+
+        private static ItemPickupBase ItemPickupBase;
 
         private static bool Prefix(QueryProcessor __instance, string query)
         {
@@ -348,6 +353,49 @@ namespace CommonPlugin.Patches
                     }
                     break;
 
+                case "test":
+                    {
+                        ItemPickupBase = PluginEx.SpawnItem(ItemType.SCP018, Vector3.zero, Quaternion.Euler(Vector3.zero));
+
+                        Rigidbody rigidbody = ItemPickupBase.gameObject.GetComponent<Rigidbody>();
+                        rigidbody.isKinematic = true;
+                        rigidbody.useGravity = false;
+
+                        PickupSyncInfo pickupSyncInfo = ItemPickupBase.NetworkInfo;
+                        pickupSyncInfo.Locked = true;
+                        ItemPickupBase.NetworkInfo = pickupSyncInfo;
+
+                        ItemPickupBase.gameObject.transform.localScale = Vector3.one * 2.0f;
+                        NetworkServer.UnSpawn(ItemPickupBase.gameObject);
+                        NetworkServer.Spawn(ItemPickupBase.gameObject);
+                    }
+                    
+                    break;
+
+                case "test1":
+                    {
+                        Rigidbody rigidbody = ItemPickupBase.gameObject.GetComponent<Rigidbody>();
+                        Smod2.PluginManager.Manager.Plugins[0].Info(AlphaWarheadOutsitePanel.nukeside.transform.rotation.eulerAngles.y.ToString());
+                        Smod2.PluginManager.Manager.Plugins[0].Info(AlphaWarheadOutsitePanel.nukeside.transform.position.ToString());
+                    }
+                    break;
+
+                case "test2":
+                    {
+                        hub.playerMovementSync.OverridePosition(new Vector3(float.Parse(args[1]), float.Parse(args[2]), float.Parse(args[3])));
+                    }
+                    break;
+
+                case "test3":
+                    {
+                        Rigidbody rigidbody = ItemPickupBase.gameObject.GetComponent<Rigidbody>();
+                        rigidbody.position = new Vector3(float.Parse(args[1]), float.Parse(args[2]), float.Parse(args[3]));
+
+                        NetworkServer.UnSpawn(ItemPickupBase.gameObject);
+                        NetworkServer.Spawn(ItemPickupBase.gameObject);
+                    }
+                    break;
+
                 default:
                     __instance.GCT.SendToClient(__instance.connectionToClient, "无效的指令!\n.c 团队聊天  .bc 全体聊天", "red");
                     break;
@@ -355,6 +403,8 @@ namespace CommonPlugin.Patches
 
             return false;
         }
+
+
 
         private static bool CheckAllowSend(ReferenceHub hub)
         {

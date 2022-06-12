@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-
 using Hints;
 using InventorySystem.Items.Usables;
 using Mirror;
 using UnityEngine;
-
 using HarmonyLib;
 using NorthwoodLib.Pools;
-
 using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches

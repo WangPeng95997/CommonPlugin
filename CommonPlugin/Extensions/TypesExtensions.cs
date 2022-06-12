@@ -11,8 +11,8 @@
 
 	public enum LCZRoom
 	{
-		Scp012Room,
 		Scp173Room,
+		Scp330Room,
 		Scp372Room,
 		Scp914Room,
 		Scp703Room,

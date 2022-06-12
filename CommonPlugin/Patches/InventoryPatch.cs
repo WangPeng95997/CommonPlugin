@@ -2,7 +2,6 @@
 using InventorySystem;
 using Smod2;
 using HarmonyLib;
-
 using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
@@ -14,9 +13,12 @@ namespace CommonPlugin.Patches
 
 		private const int Scp106Cooldown = EventHandlers.Scp106Cooldown;
 
-		private static bool Prefix(InventorySystem.Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)
+		private static bool Prefix(Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)
         {
 			ReferenceHub hub = ReferenceHub.GetHub(__instance.gameObject);
+
+			if (hub.scp106PlayerScript.goingViaThePortal)
+				return false;
 
 			if (hotkeyButtonPressed == ActionName.HotkeyKeycard && hub.characterClassManager.NetworkCurClass == RoleType.Scp106 && !Plugin.Server.Map.WarheadDetonated)
             {

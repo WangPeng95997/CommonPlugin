@@ -2,7 +2,7 @@
 
 namespace CommonPlugin.Extensions
 {
-    public static class Scp106PlayerScriptExtensions
+    public static class Scp106Extensions
     {
         public static void TeleportAnimation(this Scp106PlayerScript scp106PlayerScript)
         {

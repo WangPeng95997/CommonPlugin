@@ -1,8 +1,11 @@
-﻿using Smod2;
-using Smod2.API;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Interactables.Interobjects;
+using MapGeneration;
 using UnityEngine;
+using Smod2;
+using Smod2.API;
+using NorthwoodLib.Pools;
 
 namespace CommonPlugin
 {
@@ -10,7 +13,7 @@ namespace CommonPlugin
     {
         public static List<Smod2Room> Rooms { get; private set; }
         public static Smod2Room MircohidRoom { get; private set; }
-        public static Smod2Room Scp012Room { get; private set; }
+        public static Smod2Room Scp330Room { get; private set; }
         public static Smod2Room Scp049Room { get; private set; }
         public static Smod2Room Scp079Room { get; private set; }
         public static Smod2Room Scp096Room { get; private set; }
@@ -24,16 +27,13 @@ namespace CommonPlugin
         public static void GetRooms()
         {
             Rooms.Clear();
-            Rooms.AddRange(GameObject.FindGameObjectsWithTag("Room").Select(r => new Smod2Room(r.name, r.transform, r.transform.position)));
 
-            Transform transfrom;
-            const string PocketDimensionRoom = "HeavyRooms/PocketWorld";
-            transfrom = GameObject.Find(PocketDimensionRoom).transform;
-            Rooms.Add(new Smod2Room(PocketDimensionRoom, transfrom, transfrom.position));
+            List<GameObject> roomObjects = ListPool<GameObject>.Shared.Rent(Object.FindObjectsOfType<RoomIdentifier>().Select(x => x.gameObject));
 
-            const string surfaceRoom = "Outside";
-            transfrom = GameObject.Find(surfaceRoom).transform;
-            Rooms.Add(new Smod2Room(surfaceRoom, transfrom, transfrom.position));
+            foreach (GameObject roomObject in roomObjects)
+                Rooms.Add(new Smod2Room(roomObject.name, roomObject.transform, roomObject.transform.position));
+
+            ListPool<GameObject>.Shared.Return(roomObjects);
 
             foreach (Smod2Room smod2Room in Rooms)
             {
@@ -43,77 +43,81 @@ namespace CommonPlugin
 
                 switch (smod2Room.Roomname)
                 {
-                    // Lcz SCP-012
-                    case "LCZ_012":
-                        Scp012Room = smod2Room;
-                        Scp012Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y - 2.5f, smod2Room.Position.z);
-                        Scp012Room.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y - 2.5f, smod2Room.Position.z);
-                        break;
-
-                    // Lcz Scp703Room
-                    case "LCZ_Cafe":
-                        Scp703Room = smod2Room;
-                        Scp703Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y + 0.25f, smod2Room.Position.z);
-                        Scp703Room.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y + 0.25f, smod2Room.Position.z);
-                        break;
-
-                    // Hcz Scp079Room
+                    // Scp079Room
                     case "HCZ_079":
                         Scp079Room = smod2Room;
-                        Scp079Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
-                        Scp079Room.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
+                        Scp079Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y, smod2Room.Position.z) + Vector.Up;
+                        Scp079Room.Position = smod2Room.Position + Vector3.up;
                         break;
 
-                    // Hcz Scp106Room
+                    // Scp106Room
                     case "HCZ_106":
                         Scp106Room = smod2Room;
-                        Scp106Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
-                        Scp106Room.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
+                        Scp106Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y, smod2Room.Position.z) + Vector.Up;
+                        Scp106Room.Position = smod2Room.Position + Vector3.up;
                         break;
 
-                    // Hcz MircoHIDRoom
-                    case "HCZ_Hid":
-                        MircohidRoom = smod2Room;
-                        MircohidRoom.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
-                        MircohidRoom.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
+                    // Scp703Room
+                    case "LCZ_Cafe":
+                        Scp703Room = smod2Room;
+                        Scp703Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y, smod2Room.Position.z) + Vector.Up;
+                        Scp703Room.Position = smod2Room.Position + Vector3.up;
                         break;
 
-                    // Hcz ServersRoom
-                    case "HCZ_Servers":
-                        ServersRoom = smod2Room;
-                        ServersRoom.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
-                        ServersRoom.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y + 2.5f, smod2Room.Position.z);
-                        break;
-
-                    // Hcz Scp939Room
+                    // Scp939Room
                     case "HCZ_Testroom":
                         Scp939Room = smod2Room;
-                        Scp939Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y - 12.5f, smod2Room.Position.z);
-                        Scp939Room.Position = new Vector3(smod2Room.Position.x, smod2Room.Position.y - 12.5f, smod2Room.Position.z);
+                        Scp939Room.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y, smod2Room.Position.z) - Vector.Up * 14.5f;
+                        Scp939Room.Position = smod2Room.Position - Vector3.up * 14.5f;
+                        break;
+
+                    // MircoHIDRoom
+                    case "HCZ_Hid":
+                        MircohidRoom = smod2Room;
+                        MircohidRoom.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y, smod2Room.Position.z) + Vector.Up;
+                        MircohidRoom.Position = smod2Room.Position + Vector3.up;
+                        break;
+
+                    // ServersRoom
+                    case "HCZ_Servers":
+                        ServersRoom = smod2Room;
+                        ServersRoom.Position2 = new Vector(smod2Room.Position.x, smod2Room.Position.y, smod2Room.Position.z) + Vector.Up;
+                        ServersRoom.Position = smod2Room.Position + Vector3.up;
                         break;
                 }
             }
 
-            Vector vector;
-            Map map = PluginManager.Manager.Server.Map;
+            // Scp049Room
+            GameObject gameObject = GameObject.FindGameObjectWithTag("SP_049");
+            Vector3 position = gameObject.transform.position;
+            Scp049Room = new Smod2Room("Scp049Room");
+            Scp049Room.Transform = gameObject.transform;
+            Scp049Room.Position2 = new Vector(position.x, position.y, position.z);
+            Scp049Room.Position = position;
 
-            // Hcz Scp049Room
-            vector = map.GetRandomSpawnPoint(Smod2.API.RoleType.SCP_049);
-            MapManager.Scp049Room = new Smod2Room("Scp049Room");
-            MapManager.Scp049Room.Position = new Vector3(vector.x, vector.y + 0.2f, vector.z);
-            MapManager.Scp049Room.Position2 = new Vector(vector.x, vector.y + 0.2f, vector.z);
+            // Scp096Room
+            gameObject = GameObject.FindGameObjectWithTag("SCP_096");
+            position = gameObject.transform.position;
+            Scp096Room = new Smod2Room("Scp096Room");
+            Scp096Room.Transform = gameObject.transform;
+            Scp096Room.Position2 = new Vector(position.x, position.y, position.z);
+            Scp096Room.Position = position;
 
-            // Hcz Scp096Room
-            vector = map.GetRandomSpawnPoint(Smod2.API.RoleType.SCP_096);
-            MapManager.Scp096Room = new Smod2Room("Scp096Room");
-            MapManager.Scp096Room.Position = new Vector3(vector.x, vector.y + 0.2f, vector.z);
-            MapManager.Scp096Room.Position2 = new Vector(vector.x, vector.y + 0.2f, vector.z);
+            // Scp173Room
+            gameObject = GameObject.FindGameObjectWithTag("SP_173");
+            position = gameObject.transform.position;
+            Scp173Room = new Smod2Room("Scp173Room");
+            Scp173Room.Transform = gameObject.transform;
+            Scp173Room.Position2 = new Vector(position.x, position.y, position.z);
+            Scp173Room.Position = position;
 
-            // Lcz Scp173Room
-            vector = map.GetRandomSpawnPoint(Smod2.API.RoleType.SCP_173);
-            MapManager.Scp173Room = new Smod2Room("Scp173Room");
-            MapManager.Scp173Room.Position = new Vector3(vector.x, vector.y + 0.2f, vector.z);
-            MapManager.Scp173Room.Position2 = new Vector(vector.x, vector.y + 0.2f, vector.z);
+            // Scp330Room
+            Scp330Interobject scp330Interobject = Object.FindObjectOfType<Scp330Interobject>();
+            position = scp330Interobject.transform.position;
+            Scp330Room = new Smod2Room("Scp330Room");
+            Scp330Room.Transform = scp330Interobject.transform;
+            Scp330Room.Position2 = new Vector(position.x, position.y, position.z) + Vector.Up;
+            Scp330Room.Position = position + Vector3.up;
         }
     }
 

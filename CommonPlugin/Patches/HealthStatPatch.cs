@@ -1,6 +1,5 @@
 ﻿using PlayerStatsSystem;
 using HarmonyLib;
-
 using CommonPlugin.Components;
 
 namespace CommonPlugin.Patches

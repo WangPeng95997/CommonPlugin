@@ -1,0 +1,46 @@
+private static void RoleChanged(ReferenceHub ply, RoleType prevRole, RoleType newRole, bool lite, CharacterClassManager.SpawnReason spawnReason)
+{
+	if (!NetworkServer.active)
+	{
+		return;
+	}
+	Player player = new SmodPlayer(ply.gameObject);
+	SmodRole previousRole = new SmodRole(newRole);
+	List<Smod2.API.ItemType> items = new List<Smod2.API.ItemType>();
+	Dictionary<AmmoType, ushort> ammo = new Dictionary<AmmoType, ushort>();
+	bool dropExistingItems = spawnReason == CharacterClassManager.SpawnReason.Escaped && prevRole != newRole;
+	PlayerSetInventoryEvent playerSetInventoryEvent = new PlayerSetInventoryEvent(player, previousRole, items, ammo, dropExistingItems);
+	EventManager.Manager.HandleEvent<IEventHandlerSetInventory>(playerSetInventoryEvent);
+	Inventory inventory = ply.inventory;
+	if (playerSetInventoryEvent.DropExistingItems)
+	{
+		List<ItemPickupBase> list = new List<ItemPickupBase>();
+		while (inventory.UserInventory.Items.Count > 0)
+		{
+			list.Add(inventory.ServerDropItem(inventory.UserInventory.Items.ElementAt(0).Key));
+		}
+		InventoryItemProvider.PreviousInventoryPickups[ply] = list;
+	}
+	else
+	{
+		while (inventory.UserInventory.Items.Count > 0)
+		{
+			inventory.ServerRemoveItem(inventory.UserInventory.Items.ElementAt(0).Key, null);
+		}
+		inventory.UserInventory.ReserveAmmo.Clear();
+		inventory.SendAmmoNextFrame = true;
+	}
+	foreach (KeyValuePair<AmmoType, ushort> keyValuePair in playerSetInventoryEvent.Ammo)
+	{
+		inventory.ServerAddAmmo((global::ItemType)keyValuePair.Key, (int)keyValuePair.Value);
+	}
+	foreach (Smod2.API.ItemType type in playerSetInventoryEvent.Items)
+	{
+		ItemBase arg = inventory.ServerAddItem((global::ItemType)type, 0, null);
+		Action<ReferenceHub, ItemBase> onItemProvided = InventoryItemProvider.OnItemProvided;
+		if (onItemProvided != null)
+		{
+			onItemProvided(ply, arg);
+		}
+	}
+}

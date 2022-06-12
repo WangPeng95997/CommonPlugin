@@ -13,8 +13,8 @@ namespace CommonPlugin
 		langFile = "CommonPlugin",
 		version = "A",
 		SmodMajor = 3,
-		SmodMinor = 9,
-		SmodRevision = 10
+		SmodMinor = 10,
+		SmodRevision = 1
 		)]
 
 	public class CommonPlugin : Plugin
@@ -35,7 +35,7 @@ namespace CommonPlugin
 
 		public override void Register()
 		{
-			AddEventHandlers(new EventHandlers(this));
+			this.AddEventHandlers(new EventHandlers(this));
 		}
 	}
 }

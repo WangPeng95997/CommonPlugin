@@ -1,0 +1,21 @@
+private static void SpawnPreviousInventoryPickups(ReferenceHub hub)
+{
+	List<ItemPickupBase> list;
+	if (!NetworkServer.active || hub == null || !InventoryItemProvider.PreviousInventoryPickups.TryGetValue(hub, out list))
+	{
+		return;
+	}
+	hub.transform.position = hub.playerMovementSync.RealModelPosition;
+	foreach (ItemPickupBase itemPickupBase in list)
+	{
+		Inventory inventory = hub.inventory;
+		PickupSyncInfo info = itemPickupBase.Info;
+		ItemBase itemBase;
+		if (!info.Locked && InventoryItemLoader.AvailableItems.TryGetValue(info.ItemId, out itemBase))
+		{
+			itemPickupBase.transform.position = hub.transform.position;
+			itemPickupBase.RefreshPositionAndRotation();
+		}
+	}
+	InventoryItemProvider.PreviousInventoryPickups.Remove(hub);
+}

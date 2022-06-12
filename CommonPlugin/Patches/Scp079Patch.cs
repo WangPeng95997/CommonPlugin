@@ -2,7 +2,7 @@
 
 namespace CommonPlugin.Patches
 {
-    internal static class Scp079PlayerScript
+    internal static class Scp079Patch
     {
 
     }

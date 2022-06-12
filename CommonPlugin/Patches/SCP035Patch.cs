@@ -1,18 +1,21 @@
-﻿using UnityEngine;
-using InventorySystem.Items.ThrowableProjectiles;
+﻿using InventorySystem.Items.ThrowableProjectiles;
 using PlayerStatsSystem;
-using CommonPlugin.Extensions;
+using UnityEngine;
 using HarmonyLib;
+using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
 {
+    /*
     [HarmonyPatch(typeof(HitboxIdentity), "CheckFriendlyFire", typeof(ReferenceHub), typeof(ReferenceHub), typeof(bool))]
     internal static class CheckFriendlyFirePatch
     {
         private static void Postfix(ref bool __result, HitboxIdentity __instance, ReferenceHub attacker, ReferenceHub victim, bool ignoreConfig)
         {
-            if (!__result) {
-                if (victim.playerId == EventHandlers.Scp035id) {
+            if (!__result)
+            {
+                if (victim.playerId == EventHandlers.Scp035id)
+                {
                     __result = true;
                     return;
                 }
@@ -37,6 +40,7 @@ namespace CommonPlugin.Patches
     {
         private static bool Prefix(FlashbangGrenade __instance, ReferenceHub hub)
         {
+            // TODO
             AhpStat.AhpProcess ahpProcess = ReferenceHub.GetHub(__instance.gameObject).GetAhpProcess();
 
             if (ahpProcess is not null && ahpProcess.Limit == 35.0f)
@@ -58,4 +62,5 @@ namespace CommonPlugin.Patches
             return true;
         }
     }
+    */
 }
