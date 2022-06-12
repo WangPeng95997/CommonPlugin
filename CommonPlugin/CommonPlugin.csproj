@@ -96,7 +96,9 @@
     <Compile Include="Patches\CharacterClassManagerPatch.cs" />
     <Compile Include="Patches\DoorVariantPatch.cs" />
     <Compile Include="Patches\FallDamagePatch.cs" />
+    <Compile Include="Patches\FirstPersonControllerPatch.cs" />
     <Compile Include="Patches\HealthStatPatch.cs" />
+    <Compile Include="Patches\IdleModePatch.cs" />
     <Compile Include="Patches\InventoryLimitsPatch.cs" />
     <Compile Include="Patches\InventoryPatch.cs" />
     <Compile Include="Patches\QueryProcessorPatch.cs" />
@@ -108,10 +110,11 @@
     <Compile Include="Patches\SCP096Patch.cs" />
     <Compile Include="Patches\Scp106Patch.cs" />
     <Compile Include="Patches\Scp173Patch.cs" />
+    <Compile Include="Patches\Scp207Patch.cs" />
     <Compile Include="Patches\Scp682Patch.cs" />
     <Compile Include="Patches\Scp939Patch.cs" />
     <Compile Include="Patches\ServerRolesPatch.cs" />
-    <Compile Include="Patches\SinkholeEnvironmentalHazardPatch.cs" />
+    <Compile Include="Patches\SinkholePatch.cs" />
     <Compile Include="Patches\UsableItemsControllerPatch.cs" />
   </ItemGroup>
   <ItemGroup />

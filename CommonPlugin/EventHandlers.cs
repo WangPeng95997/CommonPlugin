@@ -31,7 +31,7 @@ using CommonPlugin.Patches;
 namespace CommonPlugin
 {
     public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerCheckRoundEnd, IEventHandlerContain106,
-		IEventHandlerLCZDecontaminate, IEventHandlerPlayerSCP207Use, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave,
+		IEventHandlerLCZDecontaminate, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave,
 		IEventHandlerPlayerPickupItem, IEventHandlerPlayerTriggerTesla, IEventHandlerPocketDimensionDie, IEventHandlerPocketDimensionEnter, IEventHandlerPocketDimensionExit,
 		IEventHandlerRoundEnd, IEventHandlerRoundStart, IEventHandlerScp096AddTarget, IEventHandlerSCP914Activate, IEventHandlerSetRole, IEventHandlerTeamRespawn,
 		IEventHandlerWaitingForPlayers, IEventHandlerWarheadChangeLever, IEventHandlerWarheadStopCountdown, IEventHandlerWarheadDetonate, IEventHandlerSetInventory
@@ -83,6 +83,7 @@ namespace CommonPlugin
 		public const int lateJoinTime = 90;
 		private const int maxPlayer = 33;
 		private const float medkitHeal = 70.0f;
+		private const float medkitHeal2 = 10.0f;
 		private const int selfHealCooldown = 3;
 
 		private bool bRoundEnd;
@@ -237,6 +238,9 @@ namespace CommonPlugin
 			switch (itemType)
 			{
 				case ItemType.Medkit:
+					if (hub.playerId != Scp035id)
+						healthControler.MaxHealth = healthControler.MaxHealth + medkitHeal2 > healthControler.MaxHealth2 ? healthControler.MaxHealth2 : healthControler.MaxHealth + medkitHeal2;
+
 					healthStat.ServerHeal(hub.playerId == Scp035id ? Scp035Heal : medkitHeal);
 					hub.playerEffectsController.UseMedicalItem(itemType);
 					break;
@@ -264,12 +268,6 @@ namespace CommonPlugin
 			}
 		}
 
-		public void OnPlayerSCP207Use(PlayerSCP207UseEvent ev)
-		{
-			if (ev.Player.GetPlayerEffect(StatusEffect.SCP207).Intensity > 0)
-				ev.Allow = false;
-		}
-
 		public void OnPlayerDie(PlayerDeathEvent ev)
 		{
 			if (GameCore.RoundStart.singleton.NetworkTimer != -1 || ev.DamageTypeVar == DamageType.NONE)
@@ -295,20 +293,16 @@ namespace CommonPlugin
 				default:
 					if (player.playerId == Scp035id)
 					{
-						// TODO
 						Scp035id = 0;
 						PluginEx.ClearServerBadge(player.serverRoles);
-
-						RespawnEffectsController.PlayCassieAnnouncement("SCP 0 3 5 CONTAINS SUCCESSFULLY", false, true);
+						PluginEx.CassieMessage("SCP 0 3 5 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-035<color>收容成功, 收容者: {killer.nicknameSync.DisplayName}");
 						return;
 					}
 					else if (player.playerId == Scp181id)
 					{
-						// TODO
 						Scp181id = 0;
 						PluginEx.ClearServerBadge(player.serverRoles);
-
-						RespawnEffectsController.PlayCassieAnnouncement("SCP 1 8 1 CONTAINS SUCCESSFULLY", false, true);
+						PluginEx.CassieMessage("SCP 0 3 5 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-181<color>收容成功, 收容者: {killer.nicknameSync.DisplayName}");
 						return;
 					}
 					break;
@@ -372,8 +366,7 @@ namespace CommonPlugin
 						case DamageType.AK:
 						case DamageType.SHOTGUN:
 							ev.Damage = (ev.Damage > 40.0f) ? Scp035Hit * 4 : Scp035Hit;
-							// TODO
-							healthController.MaxHealth -= 1.0f;
+							healthController.MaxHealth -= ev.Damage > 40.0f ? 4.0f : 1.0f;
 							return;
 					}
 
@@ -644,25 +637,74 @@ namespace CommonPlugin
 		{
 			switch((RoleType)ev.PreviousRole.RoleID)
             {
-				case RoleType.ClassD:
-					if (Random.Next(5) == 0)
-						ev.Items.Add(Smod2.API.ItemType.KEYCARD_SCIENTIST);
-					else if (Random.Next(4) == 0)
-						ev.Items.Add(Smod2.API.ItemType.KEYCARD_JANITOR);
+				case RoleType.FacilityGuard:
+					ev.Ammo.Add(AmmoType.AMMO_556_X45, 40);
+					ev.Ammo.Add(AmmoType.AMMO_9_X19, 200);
 
-					ev.Items.Add(Smod2.API.ItemType.FLASHLIGHT);
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_GUARD);
+					ev.Items.Add(Smod2.API.ItemType.GUN_FSP9);
+					ev.Items.Add(Smod2.API.ItemType.ADRENALINE);
+					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+					ev.Items.Add(Smod2.API.ItemType.GRENADE_HE);
+					ev.Items.Add(Smod2.API.ItemType.GRENADE_FLASH);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_LIGHT);
+					ev.Items.Add(Smod2.API.ItemType.RADIO);
+					break;
 
-					if (Random.Next(4) == 0)
-						ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+				case RoleType.NtfPrivate:
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_NTF_OFFICER);
+					ev.Items.Add(Smod2.API.ItemType.GUN_CROSSVEC);
+					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+
+					if (Random.Next(3) == 0)
+						ev.Items.Add(Smod2.API.ItemType.GRENADE_HE);
 					else if (Random.Next(3) == 0)
-						ev.Items.Add(Smod2.API.ItemType.PAINKILLERS);
+						ev.Items.Add(Smod2.API.ItemType.GRENADE_FLASH);
 
-					if (Random.Next(20) == 0)
-						ev.Items.Add(Smod2.API.ItemType.SCP_268);
-					else if (Random.Next(10) == 0)
-						ev.Items.Add(Smod2.API.ItemType.SCP_207);
-					else if (Random.Next(10) == 0)
-						ev.Items.Add(Smod2.API.ItemType.SCP_2176);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
+					ev.Items.Add(Smod2.API.ItemType.RADIO);
+					break;
+
+				case RoleType.NtfSergeant:
+					ev.Ammo.Add(AmmoType.AMMO_556_X45, 200);
+					ev.Ammo.Add(AmmoType.AMMO_44_CAL, 60);
+					ev.Ammo.Add(AmmoType.AMMO_9_X19, 120);
+
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_NTF_LIEUTENANT);
+					ev.Items.Add(Smod2.API.ItemType.GUN_E11_SR);
+					ev.Items.Add(Smod2.API.ItemType.GUN_REVOLVER);
+					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+					ev.Items.Add(Smod2.API.ItemType.GRENADE_HE);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
+					ev.Items.Add(Smod2.API.ItemType.RADIO);
+					break;
+
+				case RoleType.NtfSpecialist:
+					ev.Ammo.Add(AmmoType.AMMO_556_X45, 200);
+					ev.Ammo.Add(AmmoType.AMMO_9_X19, 120);
+
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_NTF_LIEUTENANT);
+					ev.Items.Add(Smod2.API.ItemType.GUN_E11_SR);
+					ev.Items.Add(Smod2.API.ItemType.MICRO_HID);
+					ev.Items.Add(Smod2.API.ItemType.SCP_500);
+					ev.Items.Add(Smod2.API.ItemType.SCP_1853);
+					ev.Items.Add(Smod2.API.ItemType.GRENADE_HE);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
+					ev.Items.Add(Smod2.API.ItemType.RADIO);
+					break;
+
+				case RoleType.NtfCaptain:
+					ev.Ammo.Add(AmmoType.AMMO_12_GAUGE, 70);
+					ev.Ammo.Add(AmmoType.AMMO_556_X45, 200);
+
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_NTF_COMMANDER);
+					ev.Items.Add(Smod2.API.ItemType.GUN_E11_SR);
+					ev.Items.Add(Smod2.API.ItemType.GUN_SHOTGUN);
+					ev.Items.Add(Smod2.API.ItemType.ADRENALINE);
+					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+					ev.Items.Add(Smod2.API.ItemType.GRENADE_HE);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_HEAVY);
+					ev.Items.Add(Smod2.API.ItemType.RADIO);
 					break;
 
 				case RoleType.ChaosConscript:
@@ -675,23 +717,42 @@ namespace CommonPlugin
 					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
 					break;
 
-				case RoleType.NtfPrivate:
-					ev.Ammo.Add(AmmoType.AMMO_556_X45, 80);
-					ev.Ammo.Add(AmmoType.AMMO_9_X19, 200);
+				case RoleType.ChaosRifleman:
+					ev.Ammo.Add(AmmoType.AMMO_12_GAUGE, 30);
+					ev.Ammo.Add(AmmoType.AMMO_762_X39, 200);
 
-					ev.Items.Add(Smod2.API.ItemType.KEYCARD_NTF_OFFICER);
-					ev.Items.Add(Smod2.API.ItemType.GUN_CROSSVEC);
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_CHAOS_INSURGENCY);
+					ev.Items.Add(Smod2.API.ItemType.GUN_AK);
 					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
-
-					if (Random.Next(3) == 0)
-						ev.Items.Add(Smod2.API.ItemType.GRENADE_HE);
-					else if (Random.Next(3) == 0)
-						ev.Items.Add(Smod2.API.ItemType.FLASHLIGHT);
-
+					ev.Items.Add(Smod2.API.ItemType.PAINKILLERS);
 					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
-					ev.Items.Add(Smod2.API.ItemType.RADIO);
 					break;
-            }
+
+				case RoleType.ChaosMarauder:
+					ev.Ammo.Add(AmmoType.AMMO_12_GAUGE, 100);
+					ev.Ammo.Add(AmmoType.AMMO_44_CAL, 60);
+					ev.Ammo.Add(AmmoType.AMMO_762_X39, 60);
+
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_CHAOS_INSURGENCY);
+					ev.Items.Add(Smod2.API.ItemType.GUN_SHOTGUN);
+					ev.Items.Add(Smod2.API.ItemType.GUN_REVOLVER);
+					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+					ev.Items.Add(Smod2.API.ItemType.PAINKILLERS);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
+					break;
+
+				case RoleType.ChaosRepressor:
+					ev.Ammo.Add(AmmoType.AMMO_12_GAUGE, 70);
+					ev.Ammo.Add(AmmoType.AMMO_762_X39, 300);
+
+					ev.Items.Add(Smod2.API.ItemType.KEYCARD_CHAOS_INSURGENCY);
+					ev.Items.Add(Smod2.API.ItemType.GUN_LOGICER);
+					ev.Items.Add(Smod2.API.ItemType.GUN_SHOTGUN);
+					ev.Items.Add(Smod2.API.ItemType.ADRENALINE);
+					ev.Items.Add(Smod2.API.ItemType.MEDKIT);
+					ev.Items.Add(Smod2.API.ItemType.ARMOR_COMBAT);
+					break;
+			}
 		}
 
 		public void OnSetRole(PlayerSetRoleEvent ev)
@@ -1632,7 +1693,6 @@ namespace CommonPlugin
 
 			switch (hub.characterClassManager.NetworkCurClass)
 			{
-				/*
 				case RoleType.ClassD:
 					if (Random.Next(5) == 0)
 						hub.inventory.ServerAddItem(ItemType.KeycardScientist);
@@ -1678,135 +1738,10 @@ namespace CommonPlugin
 					hub.inventory.SendAmmoNextFrame = true;
 					break;
 
-				case RoleType.FacilityGuard:
-					hub.inventory.ServerAddItem(ItemType.KeycardGuard);
-					hub.inventory.ServerAddItem(ItemType.GunFSP9);
-					hub.inventory.ServerAddItem(ItemType.Adrenaline);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.GrenadeHE);
-					hub.inventory.ServerAddItem(ItemType.GrenadeFlash);
-					hub.inventory.ServerAddItem(ItemType.ArmorLight);
-					hub.inventory.ServerAddItem(ItemType.Radio);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo556x45] = 40;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo9x19] = 200;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-
-				case RoleType.NtfPrivate:
-					hub.inventory.ServerAddItem(ItemType.KeycardNTFOfficer);
-					hub.inventory.ServerAddItem(ItemType.GunCrossvec);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-
-					if (Random.Next(3) == 0)
-						hub.inventory.ServerAddItem(ItemType.GrenadeHE);
-					else if (Random.Next(3) == 0)
-						hub.inventory.ServerAddItem(ItemType.GrenadeFlash);
-
-					hub.inventory.ServerAddItem(ItemType.ArmorCombat);
-					hub.inventory.ServerAddItem(ItemType.Radio);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo556x45] = 80;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo9x19] = 200;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-
-				case RoleType.NtfSergeant:
-					hub.inventory.ServerAddItem(ItemType.KeycardNTFLieutenant);
-					hub.inventory.ServerAddItem(ItemType.GunE11SR);
-					hub.inventory.ServerAddItem(ItemType.GunRevolver);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.GrenadeHE);
-					hub.inventory.ServerAddItem(ItemType.ArmorCombat);
-					hub.inventory.ServerAddItem(ItemType.Radio);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo556x45] = 200;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo44cal] = 60;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo9x19] = 120;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-
-				case RoleType.NtfSpecialist:
-					hub.inventory.ServerAddItem(ItemType.KeycardNTFLieutenant);
-					hub.inventory.ServerAddItem(ItemType.GunE11SR);
-					hub.inventory.ServerAddItem(ItemType.MicroHID);
-					hub.inventory.ServerAddItem(ItemType.SCP500);
-					hub.inventory.ServerAddItem(ItemType.SCP1853);
-					hub.inventory.ServerAddItem(ItemType.GrenadeHE);
-					hub.inventory.ServerAddItem(ItemType.ArmorCombat);
-					hub.inventory.ServerAddItem(ItemType.Radio);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo556x45] = 200;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo9x19] = 120;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-				*/
-				case RoleType.NtfCaptain:
-					hub.inventory.ServerAddItem(ItemType.KeycardNTFCommander);
-					hub.inventory.ServerAddItem(ItemType.GunE11SR);
-					hub.inventory.ServerAddItem(ItemType.GunShotgun);
-					hub.inventory.ServerAddItem(ItemType.Adrenaline);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.GrenadeHE);
-					hub.inventory.ServerAddItem(ItemType.ArmorHeavy);
-					hub.inventory.ServerAddItem(ItemType.Radio);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo12gauge] = 70;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo556x45] = 200;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-					/*
-				case RoleType.ChaosConscript:
-					hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
-					hub.inventory.ServerAddItem(ItemType.GunAK);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.Painkillers);
-					hub.inventory.ServerAddItem(ItemType.ArmorCombat);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo762x39] = 160;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-
-				case RoleType.ChaosRifleman:
-					hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
-					hub.inventory.ServerAddItem(ItemType.GunAK);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.Painkillers);
-					hub.inventory.ServerAddItem(ItemType.ArmorCombat);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo12gauge] = 30;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo762x39] = 200;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-
-				case RoleType.ChaosMarauder:
-					hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
-					hub.inventory.ServerAddItem(ItemType.GunShotgun);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.Painkillers);
-					hub.inventory.ServerAddItem(ItemType.ArmorCombat);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo12gauge] = 100;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo44cal] = 60;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo762x39] = 120;
-					hub.inventory.SendAmmoNextFrame = true;
-					break;
-
 				case RoleType.ChaosRepressor:
-					hub.inventory.ServerAddItem(ItemType.KeycardChaosInsurgency);
-					hub.inventory.ServerAddItem(ItemType.GunLogicer);
-					hub.inventory.ServerAddItem(ItemType.GunShotgun);
 					(hub.inventory.ServerAddItem(ItemType.ParticleDisruptor) as Firearm).Status = new FirearmStatus(1, FirearmStatusFlags.Cocked | FirearmStatusFlags.MagazineInserted, 1);
-					hub.inventory.ServerAddItem(ItemType.Adrenaline);
-					hub.inventory.ServerAddItem(ItemType.Medkit);
-					hub.inventory.ServerAddItem(ItemType.SCP207);
-					hub.inventory.ServerAddItem(ItemType.ArmorHeavy);
-
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo12gauge] = 70;
-					hub.inventory.UserInventory.ReserveAmmo[ItemType.Ammo762x39] = 300;
-					hub.inventory.SendAmmoNextFrame = true;
 					break;
-					*/
+					
 				case RoleType.Scp049:
 					healthControler.Heal = Scp049Heal;
 					healthControler.Heal2 = Scp049Heal2;
@@ -2079,7 +2014,5 @@ namespace CommonPlugin
 
 			yield break;
 		}
-
-        
     }
 }

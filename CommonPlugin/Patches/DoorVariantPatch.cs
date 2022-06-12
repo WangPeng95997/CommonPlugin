@@ -17,7 +17,7 @@ namespace CommonPlugin.Patches
                 if (breakableDoor != null)
                     breakableDoor.Network_destroyed = true;
                 if (checkpointDoor != null)
-                    checkpointDoor.ServerDamage(65535.0f, DoorDamageType.ServerCommand);
+                    checkpointDoor.ServerDamage(65535.0f, DoorDamageType.Scp096);
             }
         }
     }

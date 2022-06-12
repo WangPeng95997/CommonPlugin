@@ -1,0 +1,15 @@
+private bool ServerAttack(GameObject target)
+{
+	ReferenceHub referenceHub;
+	if (ReferenceHub.TryGetHub(target, out referenceHub))
+	{
+		return !referenceHub.characterClassManager.IsAnyScp() && referenceHub.playerStats.DealDamage(new ScpDamageHandler(this.Hub, 50f, DeathTranslations.Scp939));
+	}
+	BreakableWindow breakableWindow;
+	if (!target.TryGetComponent<BreakableWindow>(out breakableWindow))
+	{
+		return false;
+	}
+	breakableWindow.Damage(50f, new ScpDamageHandler(this.Hub, 50f, DeathTranslations.Scp939), Vector3.zero);
+	return true;
+}

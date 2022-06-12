@@ -4,7 +4,6 @@ using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
-    /*
     [HarmonyPatch(typeof(Ragdoll), "ServerSpawnRagdoll", typeof(ReferenceHub), typeof(DamageHandlerBase))]
     internal static class RagdollPatch
     {
@@ -13,5 +12,4 @@ namespace CommonPlugin.Patches
             return GameCore.RoundStart.singleton.NetworkTimer == -1 && handler.smDamageType == DamageType.POCKET_DECAY;
         }
     }
-    */
 }

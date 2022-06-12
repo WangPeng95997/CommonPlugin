@@ -1,0 +1,4 @@
+public bool IsTargetForSCPs()
+{
+	return this.CurRole.team != global::Team.SCP && this.CurRole.team != global::Team.RIP && this.CurRole.team != global::Team.CHI && this._hub.playerStats.NetworkmaxArtificialHealth != 35;
+}

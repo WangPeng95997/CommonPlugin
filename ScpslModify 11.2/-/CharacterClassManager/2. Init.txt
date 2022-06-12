@@ -1,0 +1,12 @@
+删除以下代码
+if (count >= ((CustomNetworkManager)NetworkManager.singleton).ReservedMaxPlayers)
+{
+	timeLeft = -1;
+}
+if (timeLeft == -1)
+{
+	CharacterClassManager.ForceRoundStart();
+}
+
+增加以下代码
+CharacterClassManager.ForceRoundStart();

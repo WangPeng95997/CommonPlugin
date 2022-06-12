@@ -1,0 +1,12 @@
+private void SuccessEscape(ReferenceHub hub)
+{
+	Vector3 vector = Vector3.zero;
+	PlayerPocketDimensionExitEvent playerPocketDimensionExitEvent = new PlayerPocketDimensionExitEvent(new SmodPlayer(hub.gameObject), new SmodVector(vector));
+	EventManager.Manager.HandleEvent<IEventHandlerPocketDimensionExit>(playerPocketDimensionExitEvent);
+	vector = new Vector3(playerPocketDimensionExitEvent.ExitPosition.x, playerPocketDimensionExitEvent.ExitPosition.y, playerPocketDimensionExitEvent.ExitPosition.z);
+	hub.playerMovementSync.OverridePosition(vector, null, false);
+	hub.playerEffectsController.EnableEffect<Disabled>(10f, true);
+	hub.playerEffectsController.GetEffect<Corroding>().Intensity = 0;
+	hub.playerEffectsController.GetEffect<SinkHole>().Intensity = 0;
+	AchievementHandlerBase.ServerAchieve(hub.networkIdentity.connectionToClient, AchievementName.LarryFriend);
+}
