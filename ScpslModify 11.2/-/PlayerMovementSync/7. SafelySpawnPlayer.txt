@@ -10,6 +10,11 @@ private IEnumerator<float> SafelySpawnPlayer(Vector3 position, PlayerMovementSyn
 	{
 		this.OverridePosition(position, rot, true);
 		this._successfullySpawned = true;
+		Action<ReferenceHub> onPlayerSpawned = PlayerMovementSync.OnPlayerSpawned;
+		if (onPlayerSpawned != null)
+		{
+			onPlayerSpawned(this._hub);
+		}
 		yield break;
 	}
 	int num;

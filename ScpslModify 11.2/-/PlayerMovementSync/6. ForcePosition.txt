@@ -17,5 +17,6 @@ private void ForcePosition(Vector3 pos, string anticheatCode, bool reset = false
 	{
 		this._corroding.Intensity = 0;
 	}
+	this.AddSafeTime(1.0f);
 	this.TargetForcePosition(base.connectionToClient, pos);
 }

@@ -1,17 +1,25 @@
-if (NetworkServer.active)
+private void ServerUpdateRealModel()
 {
+	if (!NetworkServer.active)
+	{
+		return;
+	}
 	RoleType curClass = this._hub.characterClassManager.CurClass;
 	if (curClass == RoleType.None || curClass == RoleType.Spectator || curClass == RoleType.Scp079)
 	{
 		this._realModelPosition = Vector3.up * 2080f;
 		return;
 	}
-	if (curClass == global::RoleType.Tutorial || this.NoclipWhitelisted)
+	if (this.NoclipWhitelisted || curClass == RoleType.Tutorial)
 	{
-	this.RealModelPosition = this._receivedPosition;
-	base.transform.position = this._realModelPosition;
-	this.NetworkGrounded = true;
-	return;
+		this.RealModelPosition = this._receivedPosition;
+		base.transform.position = this._realModelPosition;
+		this.NetworkGrounded = true;
+		return;
+	}
+	if (!this._successfullySpawned)
+	{
+		return;
 	}
 	float num;
 	try
@@ -36,7 +44,7 @@ if (NetworkServer.active)
 	}
 	if (this.Grounded && !this._receivedJump)
 	{
-		this._moveY = -0.2f;
+		this._moveY = -10f * Time.fixedDeltaTime;
 		vector2.y = this._moveY;
 		this._wasGrounded = 0U;
 		this._zeroCounter = 0U;
@@ -82,12 +90,14 @@ if (NetworkServer.active)
 		}
 	}
 	this._cc.Move(vector2);
-	this.RealModelPosition = base.transform.position;
+	this.RealModelPosition = this._receivedPosition;
+	base.transform.position = this._realModelPosition;
 	this.NetworkGrounded = this._cc.isGrounded;
 	if (this.Grounded)
 	{
 		this.LastGroundedPosition = this.RealModelPosition;
 	}
+	this._suppressViolations = false;
 	if (this._hub.characterClassManager.CurClass == RoleType.Scp106)
 	{
 		this.Scp106ProcessColliders();

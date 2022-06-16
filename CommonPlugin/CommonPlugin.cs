@@ -11,7 +11,7 @@ namespace CommonPlugin
 		id = "l4kkS41.CommonPlugin",
 		configPrefix = "CM",
 		langFile = "CommonPlugin",
-		version = "A",
+		version = "B",
 		SmodMajor = 3,
 		SmodMinor = 10,
 		SmodRevision = 1
