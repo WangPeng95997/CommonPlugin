@@ -1,4 +1,0 @@
-public bool IsAnyScp()
-{
-	return this.CurRole.team == global::Team.SCP || this._hub.playerStats.NetworkmaxArtificialHealth == 35;
-}

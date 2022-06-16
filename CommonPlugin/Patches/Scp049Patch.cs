@@ -1,14 +1,37 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Reflection.Emit;
+using UnityEngine;
 using HarmonyLib;
+using NorthwoodLib.Pools;
+using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
     [HarmonyPatch(typeof(Scp049_2PlayerScript), "UserCode_CmdHurtPlayer", typeof(GameObject))]
-    internal static class Scp049Patch
+    internal static class CmdHurtPlayerPatch
     {
-        private static bool Prefix(Scp049_2PlayerScript __instance, GameObject plyObj)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            return ReferenceHub.GetHub(plyObj).playerId != EventHandlers.Scp035id;
+            List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
+
+            Label returnLabel = generator.DefineLabel();
+
+            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Stloc_0) + 1;
+
+            newInstructions.InsertRange(index, new CodeInstruction[]
+            {
+                new(OpCodes.Ldloc_0),
+                new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
+                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Beq_S, returnLabel),
+            });
+
+            newInstructions[newInstructions.Count - 1].WithLabels(returnLabel);
+
+            for (int z = 0; z < newInstructions.Count; z++)
+                yield return newInstructions[z];
+
+            ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace CommonPlugin.Patches
             if (usableItem.ItemTypeId == ItemType.SCP207 && hub.playerEffectsController.GetEffect<CustomPlayerEffects.Scp207>().Intensity > 0)
             {
                 hub.hints.Show(
-                    new TextHint("<b><color=#FF0000>SCP-207</color>的效果不能进行叠加</b>",
+                    new TextHint("<size=30><b><color=#FF0000>SCP-207</color>的效果不能进行叠加</b></size>",
                     new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 
                 return false;
@@ -55,11 +55,9 @@ namespace CommonPlugin.Patches
             {
                 switch (usableItem.ItemTypeId)
                 {
-                    case ItemType.SCP207:
                     case ItemType.SCP268:
-                    case ItemType.SCP1853:
                         hub.hints.Show(
-                            new TextHint("<b><color=#FF0000>SCP-035</color>不能使用该物品</b>",
+                            new TextHint("<size=30><b><color=#FF0000>SCP-035</color>不能使用该物品</b></size>",
                             new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 
                         return false;

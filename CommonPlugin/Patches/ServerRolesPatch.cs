@@ -4,6 +4,7 @@ using Mirror;
 using PlayerStatsSystem;
 using UnityEngine;
 using HarmonyLib;
+using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
 {
@@ -18,7 +19,7 @@ namespace CommonPlugin.Patches
 
         private static void Postfix(ServerRoles __instance, string challenge, string response, string publickey, bool hide)
         {
-            if (GameCore.RoundStart.singleton.NetworkTimer > 1 || GameCore.RoundStart.singleton.NetworkTimer == -2)
+            if (GameCore.RoundStart.singleton.NetworkTimer == -2)
                 Timing.CallDelayed(0.1f, () =>
                 {
                     transform.SetPositionAndRotation(new Vector3(330.2f, 573.8f, 0.0f), transform.rotation);
@@ -32,29 +33,66 @@ namespace CommonPlugin.Patches
                 });
         }
 
-        public static Vector3 GetWarheadPostion()
+        public static void SetStartScreen()
         {
-            Transform tf = AlphaWarheadOutsitePanel.nukeside.transform;
-            Vector3 postion = tf.position;
+            transform = GameObject.Find("StartRound").transform;
+            transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
 
-            switch (Convert.ToInt32(tf.rotation.eulerAngles.y))
+            WaitingPosition waitingPosition = (WaitingPosition)(new System.Random().Next((int)WaitingPosition.PositionCount));
+            switch (waitingPosition)
             {
-                case 180:
-                    return new Vector3(postion.x + 9.4f, -597.3f, postion.z - 10.6f);
+                case WaitingPosition.defaultPosition:
+                    startPostion = defaultPostion;
+                    break;
 
-                case 270:
-                    return new Vector3(postion.x - 10.55f, -597.3f, postion.z - 9.35f);
+                case WaitingPosition.Scp173Position:
+                    startPostion = GetScp173Position();
+                    break;
+
+                case WaitingPosition.Scp330Position:
+                    startPostion = GetWarheadPostion();
+                    break;
+
+                case WaitingPosition.WarheadPostion:
+                    startPostion = MapManager.Scp330Room.Position;
+                    break;
+            }
+        }
+
+        public static Vector3 GetScp173Position()
+        {
+            Transform transform = MapManager.Scp173Room.Transform;
+            Vector3 postion = transform.position;
+
+            switch (Convert.ToInt32(transform.rotation.eulerAngles.y))
+            {
+                case 75:
+                    return new Vector3(postion.x + 24.5f, 21.0f, postion.z - 0.8f);
+
+                case 255:
+                    return new Vector3(postion.x - 24.5f, 21.0f, postion.z + 0.8f);
 
                 default:
                     return defaultPostion;
             }
         }
 
-        public static void SetStartScreen()
+        public static Vector3 GetWarheadPostion()
         {
-            transform = GameObject.Find("StartRound").transform;
-            transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
-            startPostion = new System.Random().Next(2) == 0 ? defaultPostion : GetWarheadPostion();
+            Transform transform = AlphaWarheadOutsitePanel.nukeside.transform;
+            Vector3 postion = transform.position;
+
+            switch (Convert.ToInt32(transform.rotation.eulerAngles.y))
+            {
+                case 180:
+                    return new Vector3(postion.x + 9.4f, -596.8f, postion.z - 10.6f);
+
+                case 270:
+                    return new Vector3(postion.x - 10.55f, -596.8f, postion.z - 9.35f);
+
+                default:
+                    return defaultPostion;
+            }
         }
     }
 }

@@ -1,6 +1,9 @@
-this.ProcessMovement();
-if (NetworkServer.active)
+private void FixedUpdate()
 {
-	this._hub.falldamage.CalculateGround();
-	this.Tracer.Record(this.RealModelPosition);
+	this.ProcessMovement();
+	if (NetworkServer.active)
+	{
+		this._hub.falldamage.CalculateGround();
+		this.Tracer.Record(this.RealModelPosition);
+	}
 }

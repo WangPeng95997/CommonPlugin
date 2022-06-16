@@ -8,5 +8,5 @@ if (timeLeft == -1)
 	CharacterClassManager.ForceRoundStart();
 }
 
-增加以下代码
+循环外增加以下代码
 CharacterClassManager.ForceRoundStart();

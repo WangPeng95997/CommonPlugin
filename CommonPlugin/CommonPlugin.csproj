@@ -101,6 +101,7 @@
     <Compile Include="Patches\IdleModePatch.cs" />
     <Compile Include="Patches\InventoryLimitsPatch.cs" />
     <Compile Include="Patches\InventoryPatch.cs" />
+    <Compile Include="Patches\ItemDistributorPatch.cs" />
     <Compile Include="Patches\QueryProcessorPatch.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
     <Compile Include="Patches\RagdollPatch.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="Patches\Scp106Patch.cs" />
     <Compile Include="Patches\Scp173Patch.cs" />
     <Compile Include="Patches\Scp207Patch.cs" />
+    <Compile Include="Patches\Scp330Patch.cs" />
     <Compile Include="Patches\Scp682Patch.cs" />
     <Compile Include="Patches\Scp939Patch.cs" />
     <Compile Include="Patches\ServerRolesPatch.cs" />

@@ -53,6 +53,15 @@
 		Level_5,
 	}
 
+	public enum WaitingPosition
+	{
+		defaultPosition,
+		Scp173Position,
+		Scp330Position,
+		WarheadPostion,
+		PositionCount
+	}
+
 	public enum TrapItem
 	{
 		Adrenaline,

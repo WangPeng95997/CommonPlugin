@@ -7,6 +7,5 @@ private void SuccessEscape(ReferenceHub hub)
 	hub.playerMovementSync.OverridePosition(vector, null, false);
 	hub.playerEffectsController.EnableEffect<Disabled>(10f, true);
 	hub.playerEffectsController.GetEffect<Corroding>().Intensity = 0;
-	hub.playerEffectsController.GetEffect<SinkHole>().Intensity = 0;
 	AchievementHandlerBase.ServerAchieve(hub.networkIdentity.connectionToClient, AchievementName.LarryFriend);
 }

@@ -15,7 +15,7 @@ namespace CommonPlugin.Patches
 
             Label returnLabel = generator.DefineLabel();
 
-            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ret) + 1;
+            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Stloc_0) - 2;
 
             newInstructions.InsertRange(index, new CodeInstruction[]
             {

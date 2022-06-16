@@ -1,34 +1,37 @@
-this._successfullySpawned = false;
-this._spawnProcessId++;
-int thisProcessId = this._spawnProcessId;
-RaycastHit raycastHit;
-Physics.Raycast(position, Vector3.down, out raycastHit, 100f, this.CollidableSurfaces);
-position = raycastHit.point + Vector3.up * 1.23f;
-if (base.isLocalPlayer || this._hub.characterClassManager.CurClass == global::RoleType.Scp079)
+private IEnumerator<float> SafelySpawnPlayer(Vector3 position, PlayerMovementSync.PlayerRotation? rot)
 {
-	this.OverridePosition(position, rot, true);
-	this._successfullySpawned = true;
-	yield break;
-}
-int num;
-for (int i = 0; i < 10; i = num + 1)
-{
-	if (thisProcessId != this._spawnProcessId)
+	this._successfullySpawned = false;
+	this._spawnProcessId++;
+	int thisProcessId = this._spawnProcessId;
+	RaycastHit raycastHit;
+	Physics.Raycast(position, Vector3.down, out raycastHit, 100f, this.CollidableSurfaces);
+	position = raycastHit.point + Vector3.up * 1.23f;
+	if (base.isLocalPlayer || this._hub.characterClassManager.CurClass == RoleType.Scp079)
 	{
-		yield break;
-	}
-	this.OverridePosition(position, rot, true);
-	Action<global::ReferenceHub> onPlayerSpawned = global::PlayerMovementSync.OnPlayerSpawned;
-	if (onPlayerSpawned != null)
-	{
-		onPlayerSpawned(this._hub);
-	}
-	yield return Timing.WaitForSeconds(0.2f);
-	if (Vector3.Distance(position, this._receivedPosition) < 2f)
-	{
+		this.OverridePosition(position, rot, true);
 		this._successfullySpawned = true;
 		yield break;
 	}
-	num = i;
+	int num;
+	for (int i = 0; i < 10; i = num + 1)
+	{
+		if (thisProcessId != this._spawnProcessId)
+		{
+			yield break;
+		}
+		this.OverridePosition(position, rot, true);
+		Action<ReferenceHub> onPlayerSpawned = PlayerMovementSync.OnPlayerSpawned;
+		if (onPlayerSpawned != null)
+		{
+			onPlayerSpawned(this._hub);
+		}
+		yield return Timing.WaitForSeconds(0.2f);
+		if (Vector3.Distance(position, this._receivedPosition) < 2f)
+		{
+			this._successfullySpawned = true;
+			yield break;
+		}
+		num = i;
+	}
+	yield break;
 }
-yield break;

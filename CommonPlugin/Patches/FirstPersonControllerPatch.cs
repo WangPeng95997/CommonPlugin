@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
-using CustomPlayerEffects;
 using HarmonyLib;
 using NorthwoodLib.Pools;
 using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
+    
     [HarmonyPatch(typeof(FirstPersonController), "ModifyStamina", typeof(float))]
     internal static class ModifyStaminaPatch
     {
@@ -34,7 +33,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-
+    
     [HarmonyPatch(typeof(FirstPersonController), "ResetStamina")]
     internal static class ResetStaminaPatch
     {
@@ -61,8 +60,8 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-
-    [HarmonyPatch(typeof(FirstPersonController), "Update")]
+    
+    [HarmonyPatch(typeof(FirstPersonController), "UpdateStamina")]
     internal static class UpdatePatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -76,7 +75,7 @@ namespace CommonPlugin.Patches
             newInstructions.InsertRange(index, new CodeInstruction[]
             {
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldc_R4, 200.0f),
+                new(OpCodes.Ldc_I4, 200),
                 new(OpCodes.Call, PropertySetter(typeof(FirstPersonController),nameof(FirstPersonController.Network_syncStamina))),
                 new(OpCodes.Ret),
             });

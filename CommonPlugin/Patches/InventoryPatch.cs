@@ -30,12 +30,12 @@ namespace CommonPlugin.Patches
 
 					EventHandlers.Scp106LastPlace = Plugin.Server.Round.Duration;
 					hub.hints.Show(
-						new TextHint("<b><color=#FF0000>诱捕陷阱</color>放置成功!</b>",
+						new TextHint("<size=30><b><color=#FF0000>诱捕陷阱</color>放置成功!</b></size>",
 						new HintParameter[] { new StringHintParameter("") }, new HintEffect[] { HintEffectPresets.FadeOut() }, 5.0f));
 				}
 				else
 					hub.hints.Show(
-						new TextHint($"<b>还需要<color=#FF0000>{Scp106Cooldown - duration}</color>秒才能放置诱捕陷阱</b>",
+						new TextHint($"<size=30><b>还需要<color=#FF0000>{Scp106Cooldown - duration}</color>秒才能放置诱捕陷阱</b></size>",
 						new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 
 				return false;

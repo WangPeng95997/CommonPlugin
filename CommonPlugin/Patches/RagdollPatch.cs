@@ -9,7 +9,7 @@ namespace CommonPlugin.Patches
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub hub, DamageHandlerBase handler)
         {
-            return GameCore.RoundStart.singleton.NetworkTimer == -1 && handler.smDamageType == DamageType.POCKET_DECAY;
+            return GameCore.RoundStart.singleton.NetworkTimer == -1 && handler.smDamageType != DamageType.POCKET_DECAY;
         }
     }
 }

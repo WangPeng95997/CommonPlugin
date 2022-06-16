@@ -12,7 +12,7 @@ namespace CommonPlugin.Patches
         private const float Mtf = EventHandlers.MtfMaxHP;
         private const float MtfCaptain = EventHandlers.MtfCaptainMaxHP;
         private const float Chaos = EventHandlers.ChaosMaxHP;
-        private const float ChaosRepressor = EventHandlers.ChaosRepressorMaxHP;
+        private const float ChaosMarauder = EventHandlers.ChaosMarauderMaxHP;
         private const float Scp049 = EventHandlers.Scp049MaxHP;
         private const float Scp0492 = EventHandlers.Scp0492MaxHP;
         private const float Scp079 = EventHandlers.Scp079MaxHP;
@@ -49,12 +49,12 @@ namespace CommonPlugin.Patches
 
                 case RoleType.ChaosConscript:
                 case RoleType.ChaosRifleman:
-                case RoleType.ChaosMarauder:
+                case RoleType.ChaosRepressor:
                     __result = Chaos;
                     break;
 
-                case RoleType.ChaosRepressor:
-                    __result = ChaosRepressor;
+                case RoleType.ChaosMarauder:
+                    __result = ChaosMarauder;
                     break;
 
                 case RoleType.Scp049:
