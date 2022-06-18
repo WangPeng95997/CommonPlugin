@@ -31,11 +31,11 @@ using CommonPlugin.Patches;
 
 namespace CommonPlugin
 {
-    public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerCheckRoundEnd, IEventHandlerContain106,
+    public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerCheckRoundEnd, IEventHandlerContain106, IEventHandlerScpDeathAnnouncement,
 		IEventHandlerLCZDecontaminate, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave,
 		IEventHandlerPlayerPickupItem, IEventHandlerPlayerTriggerTesla, IEventHandlerPocketDimensionDie, IEventHandlerPocketDimensionEnter, IEventHandlerPocketDimensionExit,
 		IEventHandlerRoundEnd, IEventHandlerRoundStart, IEventHandlerScp096AddTarget, IEventHandlerSCP914Activate, IEventHandlerSetRole, IEventHandlerTeamRespawn,
-		IEventHandlerWaitingForPlayers, IEventHandlerWarheadChangeLever, IEventHandlerWarheadStopCountdown, IEventHandlerWarheadDetonate, IEventHandlerSetInventory
+		IEventHandlerWaitingForPlayers, IEventHandlerWarheadChangeLever, IEventHandlerWarheadStopCountdown, IEventHandlerWarheadDetonate, IEventHandlerSetInventory, IEventHandlerCassieTeamAnnouncement
 	{
 		public CommonPlugin Plugin { get; set; }
 
@@ -97,12 +97,6 @@ namespace CommonPlugin
 		public static readonly List<ushort> TrapItems = new List<ushort>();
 		private Broadcast PersonalBC;
 
-		//public static int Scp049id;
-		//public static int Scp096id;
-		//public static int Scp106id;
-		//public static int Scp173id;
-		//public static int Scp939id;
-
 		public static int Scp035id = 0;
 		public static int Scp079id = 0;
 		public static int Scp181id = 0;
@@ -142,6 +136,20 @@ namespace CommonPlugin
 					break;
 			}
 		}
+
+		public void OnCassieTeamAnnouncement(CassieTeamAnnouncementEvent ev)
+		{
+			ev.SCPsLeft += Scp035id == 0 ? 0 : 1;
+		}
+
+		public void OnScpDeathAnnouncement(ScpDeathAnnouncementEvent ev)
+        {
+			if (ev.DeadPlayer.PlayerID== Scp682id)
+            {
+				PluginEx.CassieMessage("SCP 6 8 2 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-682</color> 收容成功!");
+				ev.ShouldPlay = false;
+			}
+        }
 
 		public void OnChangeLever(WarheadChangeLeverEvent ev)
 		{
@@ -276,14 +284,14 @@ namespace CommonPlugin
 					{
 						Scp035id = 0;
 						PluginEx.ClearServerBadge(player.serverRoles);
-						PluginEx.CassieMessage("SCP 0 3 5 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-035<color>收容成功, 收容者: {killer.nicknameSync.DisplayName}");
+						PluginEx.CassieMessage("SCP 0 3 5 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-035</color> 收容成功, 收容者: {killer.nicknameSync.DisplayName}");
 						return;
 					}
 					else if (player.playerId == Scp181id)
 					{
 						Scp181id = 0;
 						PluginEx.ClearServerBadge(player.serverRoles);
-						PluginEx.CassieMessage("SCP 1 8 1 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-181<color>收容成功, 收容者: {killer.nicknameSync.DisplayName}");
+						PluginEx.CassieMessage("SCP 1 8 1 CONTAINS SUCCESSFULLY", $"<color=#FF0000>SCP-181</color> 收容成功, 收容者: {killer.nicknameSync.DisplayName}");
 						return;
 					}
 					break;
@@ -421,6 +429,7 @@ namespace CommonPlugin
 						{
 							ev.Damage = Random.Next(70, 100);
 							healthController.MaxHealth -= Scp939Hit;
+							player.playerEffectsController.EnableEffect<Amnesia>(3.0f, true);
 						}
 						return;
 				}
@@ -508,7 +517,7 @@ namespace CommonPlugin
 						if (Plugin.Server.Map.WarheadDetonated)
 							hub.playerStats.DealDamage(new CustomReasonDamageHandler("SCP-106"));
 						else
-							Timing.RunCoroutine(Timing_EnteringPocketDimension(hub, true));
+							Timing.RunCoroutine(Timing_EnteringPocketDimension(hub, null, true));
 					}
 					break;
 			}
@@ -564,13 +573,13 @@ namespace CommonPlugin
 
 		public void OnPocketDimensionEnter(PlayerPocketDimensionEnterEvent ev)
 		{
-			ReferenceHub hub = ev.Player.GetHub();
+			ReferenceHub player = ev.Player.GetHub();
 			ev.Allow = false;
 
 			if (Plugin.Server.Map.WarheadDetonated)
-				hub.playerStats.DealDamage(new CustomReasonDamageHandler("SCP-106"));
+				player.playerStats.DealDamage(new CustomReasonDamageHandler("SCP-106"));
 			else
-				Timing.RunCoroutine(Timing_EnteringPocketDimension(hub, false));
+				Timing.RunCoroutine(Timing_EnteringPocketDimension(player, ev.Attacker.GetHub(), false));
 		}
 
 		public void OnPocketDimensionExit(PlayerPocketDimensionExitEvent ev)
@@ -1782,32 +1791,45 @@ namespace CommonPlugin
 			yield break;
 		}
 
-		private IEnumerator<float> Timing_EnteringPocketDimension(ReferenceHub ply, bool IsTrapped)
+		private IEnumerator<float> Timing_EnteringPocketDimension(ReferenceHub player, ReferenceHub attacker, bool IsTrapped)
 		{
+			player.inventory.NetworkCurItem = ItemIdentifier.None;
+			player.scp106PlayerScript.goingViaThePortal = true;
+			player.scp106PlayerScript.TeleportAnimation();
+
 			if (IsTrapped)
-				ply.hints.Show(
+            {
+				player.hints.Show(
 					new TextHint("<b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b>",
 					new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 
-			ply.inventory.NetworkCurItem = ItemIdentifier.None;
-			ply.scp106PlayerScript.goingViaThePortal = true;
-			ply.scp106PlayerScript.TeleportAnimation();
-
-			foreach (Scp079PlayerScript scp079PlayerScript in Scp079PlayerScript.instances)
-				scp079PlayerScript.ServerProcessKillAssist(ply, ExpGainType.PocketAssist);
-
-			yield return Timing.WaitForSeconds(3.0f);
-
-			ply.playerEffectsController.EnableEffect<Corroding>(0.0f, false);
-			ply.scp106PlayerScript.goingViaThePortal = false;
-
-			if (IsTrapped)
 				foreach (GameObject gameObject in PlayerManager.players)
 				{
 					ReferenceHub hub = ReferenceHub.GetHub(gameObject);
 					if (hub.characterClassManager.NetworkCurClass == RoleType.Scp106)
-						Timing.RunCoroutine(Timing_SendMessage(MessageType.Person, hub.playerId, $"<color=#FFFF00>{ply.nicknameSync.MyNick}</color>触发了你的<color=#FF0000>诱捕陷阱</color>", 5));
+						Timing.RunCoroutine(Timing_SendMessage(MessageType.Person, hub.playerId,
+							$"<color=#FFFF00>{player.nicknameSync.MyNick}</color>触发了你的<color=#FF0000>诱捕陷阱</color>", 5));
 				}
+			}
+			else if (attacker != null && attacker.GetHealthControler().Evolved)
+            {
+				int itemCount = player.inventory.UserInventory.Items.Count;
+
+				if (itemCount > 0)
+					player.inventory.ServerRemoveItem(player.inventory.UserInventory.Items.ElementAt(Random.Next(itemCount)).Key, null);
+
+				player.hints.Show(
+					new TextHint("<b>你在口袋空间中丢失了一件物品...</b>",
+					new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
+			}
+
+			foreach (Scp079PlayerScript scp079PlayerScript in Scp079PlayerScript.instances)
+				scp079PlayerScript.ServerProcessKillAssist(player, ExpGainType.PocketAssist);
+
+			yield return Timing.WaitForSeconds(3.0f);
+
+			player.playerEffectsController.EnableEffect<Corroding>(0.0f, false);
+			player.scp106PlayerScript.goingViaThePortal = false;
 		}
 
 		private IEnumerator<float> Timing_OnPocketDimensionDie()

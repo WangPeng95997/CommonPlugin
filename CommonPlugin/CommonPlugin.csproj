@@ -93,6 +93,7 @@
     <Compile Include="MessageQueue.cs" />
     <Compile Include="MapManager.cs" />
     <Compile Include="Extensions\TypesExtensions.cs" />
+    <Compile Include="Patches\BodyArmorUtilsPatch.cs" />
     <Compile Include="Patches\CharacterClassManagerPatch.cs" />
     <Compile Include="Patches\DoorVariantPatch.cs" />
     <Compile Include="Patches\FallDamagePatch.cs" />

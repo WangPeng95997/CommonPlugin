@@ -4,7 +4,6 @@ using UnityEngine;
 using HarmonyLib;
 using CommonPlugin.Extensions;
 
-using UnityEngine;
 using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Pickups;
 using Mirror;
@@ -355,7 +354,7 @@ namespace CommonPlugin.Patches
 
                 case "test":
                     {
-                        __instance.GCT.SendToClient(__instance.connectionToClient, AlphaWarheadOutsitePanel.nukeside.transform.eulerAngles.y.ToString(), "red");
+                        __instance.GCT.SendToClient(__instance.connectionToClient, EventHandlers.Scp181id.ToString(), "red");
                     }
                     
                     break;

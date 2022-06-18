@@ -12,7 +12,7 @@ namespace CommonPlugin.Patches
         private static void Postfix(CharacterClassManager __instance, ref bool __result)
         {
             if (!__result)
-                __result = ReferenceHub.GetHub(__instance.gameObject).playerId != EventHandlers.Scp035id;
+                __result = ReferenceHub.GetHub(__instance.gameObject).playerId == EventHandlers.Scp035id;
         }
     }
 

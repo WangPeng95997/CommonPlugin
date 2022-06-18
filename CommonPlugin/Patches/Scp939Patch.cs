@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
 using PlayableScps;
 using UnityEngine;
@@ -22,19 +21,26 @@ namespace CommonPlugin.Patches
 
             newInstructions.InsertRange(index, new CodeInstruction[]
             {
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Call, Method(typeof(ReferenceHub), nameof(ReferenceHub.GetHub), new[] { typeof(GameObject) })),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
-                new(OpCodes.Beq_S, retrunLabel),
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Call, Method(typeof(ServerAttackPatch), nameof(ServerAttackPatch.AllowAttack))),
+                new(OpCodes.Brfalse_S, retrunLabel),
             });
 
-            newInstructions[newInstructions.Count - 1].WithLabels(retrunLabel);
+            index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ldc_I4_0);
+            newInstructions[index].WithLabels(retrunLabel);
 
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];
 
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
+        }
+
+        private static bool AllowAttack(GameObject gameObject)
+        {
+            if (gameObject.GetComponent<BreakableWindow>() == null && ReferenceHub.GetHub(gameObject).playerId == EventHandlers.Scp035id)
+                return false;
+
+            return true;
         }
     }
 }
