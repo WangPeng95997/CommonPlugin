@@ -20,7 +20,7 @@ namespace CommonPlugin.Patches
 			if (hub.scp106PlayerScript.goingViaThePortal)
 				return false;
 
-			if (hotkeyButtonPressed == ActionName.HotkeyKeycard && hub.characterClassManager.NetworkCurClass == RoleType.Scp106 && !Plugin.Server.Map.WarheadDetonated)
+			if (hotkeyButtonPressed == ActionName.HotkeyKeycard && hub.characterClassManager.NetworkCurClass == RoleType.Scp106 && !BlastDoor.OneDoor.isClosed)
             {
 				int duration = Plugin.Server.Round.Duration - EventHandlers.Scp106LastPlace;
 

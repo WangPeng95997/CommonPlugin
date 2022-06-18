@@ -1,0 +1,16 @@
+protected override void PlayExplosionEffects()
+{
+	if (!NetworkServer.active)
+	{
+		return;
+	}
+	float time = this._blindingOverDistance.keys[this._blindingOverDistance.length - 1].time;
+	float num = time * time;
+	foreach (KeyValuePair<GameObject, ReferenceHub> keyValuePair in ReferenceHub.GetAllHubs())
+	{
+		if (!(keyValuePair.Value == null) && (base.transform.position - keyValuePair.Value.transform.position).sqrMagnitude <= num && !(keyValuePair.Value == this.PreviousOwner.Hub) && HitboxIdentity.CheckFriendlyFire(this.PreviousOwner.Hub, keyValuePair.Value, false))
+		{
+			this.ProcessPlayer(keyValuePair.Value);
+		}
+	}
+}

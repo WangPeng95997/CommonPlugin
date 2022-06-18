@@ -1,0 +1,5 @@
+hub2.scp106PlayerScript.goingViaThePortal
+
+if(referenceHub.scp106PlayerScript.goingViaThePortal)
+{										this._transmitBuffer[k] = new PlayerPositionData(Vector3.up * 6000f, 0f, this._transmitBuffer[k].playerID);
+}

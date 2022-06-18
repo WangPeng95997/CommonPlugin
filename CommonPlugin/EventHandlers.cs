@@ -104,9 +104,10 @@ namespace CommonPlugin
 		public static int Scp703id = 0;
 
 		public static ushort Scp035ItemId = 0;
-		public static bool bScp035Detected = false;
 		private static Scp079Level Scp079Lv = Scp079Level.Level_1;
 		public static int Scp106LastPlace = 0;
+
+		public static bool bScp035Detected = false;
 		public static bool bScp703Working = false;
 
 		// Smod2 Interface
@@ -214,7 +215,10 @@ namespace CommonPlugin
 
 		public void OnDecontaminate() => bScp703Working = false;
 
-		public void OnDetonate() => Plugin.Server.Map.OverchargeLights(1800.0f, false);
+		public void OnDetonate()
+        {
+			Timing.RunCoroutine(Timing_OnDetonate());
+        }
 
 		public void OnConsumableUse(PlayerConsumableUseEvent ev)
 		{
@@ -397,7 +401,7 @@ namespace CommonPlugin
 						case RoleType.Scp93989:
 							int itemCount = player.inventory.UserInventory.Items.Count;
 
-							if (itemCount > 0)
+							if (itemCount > 0 && !BlastDoor.OneDoor.isClosed)
 							{
 								ev.Damage = 0.0f;
 
@@ -514,10 +518,19 @@ namespace CommonPlugin
 						ev.Item.Remove();
 						TrapItems.Remove(ev.Item.SerialNumber);
 
-						if (Plugin.Server.Map.WarheadDetonated)
-							hub.playerStats.DealDamage(new CustomReasonDamageHandler("SCP-106"));
+						if (BlastDoor.OneDoor.isClosed)
+							hub.playerStats.DealDamage(new UniversalDamageHandler(-1.0f, DeathTranslations.PocketDecay, null));
 						else
 							Timing.RunCoroutine(Timing_EnteringPocketDimension(hub, null, true));
+					}
+					break;
+
+				case ItemType.Coin:
+					if (ev.Item.SerialNumber == Scp035ItemId)
+                    {
+						ev.ChangeTo = Smod2.API.ItemType.NONE;
+						ev.Item.Remove();
+						PluginEx.SetScp035(ev.Player.GetHub());
 					}
 					break;
 			}
@@ -531,7 +544,7 @@ namespace CommonPlugin
 
 		public void OnPocketDimensionDie(PlayerPocketDimensionDieEvent ev)
 		{
-			if (!Plugin.Server.Map.WarheadDetonated && ev.Player.PlayerID == Scp181id)
+			if (ev.Player.PlayerID == Scp181id && !BlastDoor.OneDoor.isClosed)
 			{
 				ev.Die = false;
 
@@ -573,13 +586,9 @@ namespace CommonPlugin
 
 		public void OnPocketDimensionEnter(PlayerPocketDimensionEnterEvent ev)
 		{
-			ReferenceHub player = ev.Player.GetHub();
 			ev.Allow = false;
 
-			if (Plugin.Server.Map.WarheadDetonated)
-				player.playerStats.DealDamage(new CustomReasonDamageHandler("SCP-106"));
-			else
-				Timing.RunCoroutine(Timing_EnteringPocketDimension(player, ev.Attacker.GetHub(), false));
+			Timing.RunCoroutine(Timing_EnteringPocketDimension(ev.Player.GetHub(), ev.Attacker.GetHub(), false));
 		}
 
 		public void OnPocketDimensionExit(PlayerPocketDimensionExitEvent ev)
@@ -922,9 +931,10 @@ namespace CommonPlugin
 			Scp703id = 0;
 
 			Scp035ItemId = 0;
-			bScp035Detected = false;
 			Scp079Lv = Scp079Level.Level_1;
 			Scp106LastPlace = 0;
+
+			bScp035Detected = false;
 			bScp703Working = false;
 		}
 
@@ -1009,6 +1019,19 @@ namespace CommonPlugin
 					}
 					break;
             }
+		}
+
+		private IEnumerator<float> Timing_OnDetonate()
+        {
+			bScp703Working = false;
+			Plugin.Server.Map.OverchargeLights(1800.0f, false);
+
+			foreach (ItemPickupBase itemPickupBase in Object.FindObjectsOfType<ItemPickupBase>())
+				if (TrapItems.Contains(itemPickupBase.NetworkInfo.Serial))
+					itemPickupBase.DestroySelf();
+			TrapItems.Clear();
+
+			yield break;
 		}
 
 		private IEnumerator<float> Timing_Scp079FlickerLights()
@@ -1151,6 +1174,54 @@ namespace CommonPlugin
 				hub = Players[index].GetHub();
 				Players.RemoveAt(index);
 				PluginEx.SetScp035(hub);
+			}
+			else
+            {
+				itemPickupBase = PluginEx.SpawnItem(ItemType.Flashlight, Vector3.zero, Quaternion.Euler(Vector3.zero));
+
+				switch ((HCZRoom)Random.Next((int)HCZRoom.HczRoomCount))
+				{
+					case HCZRoom.Scp049Room:
+						position = MapManager.Scp049Room.Position;
+						break;
+
+					case HCZRoom.Scp079Room:
+						position = MapManager.Scp079Room.Position;
+						break;
+
+					case HCZRoom.Scp096Room:
+						position = MapManager.Scp096Room.Position;
+						break;
+
+					case HCZRoom.Scp106Room:
+						position = MapManager.Scp106Room.Position;
+						break;
+
+					case HCZRoom.Scp939Room:
+						position = MapManager.Scp939Room.Position;
+						break;
+
+					case HCZRoom.MircoHIDRoom:
+						position = MapManager.MircohidRoom.Position;
+						break;
+
+					case HCZRoom.ServersRoom:
+						position = MapManager.ServersRoom.Position;
+						break;
+				}
+
+				rigidbody = itemPickupBase.gameObject.GetComponent<Rigidbody>();
+				rigidbody.isKinematic = true;
+				rigidbody.useGravity = false;
+
+				rigidbody.position = position;
+				rigidbody.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+
+				itemPickupBase.gameObject.transform.localScale = Vector3.one * 3.5f;
+				NetworkServer.UnSpawn(itemPickupBase.gameObject);
+				NetworkServer.Spawn(itemPickupBase.gameObject);
+
+				Scp035ItemId = itemPickupBase.NetworkInfo.Serial;
 			}
 
 			// 创建SCP-682或本局未生成的SCP
@@ -1800,7 +1871,7 @@ namespace CommonPlugin
 			if (IsTrapped)
             {
 				player.hints.Show(
-					new TextHint("<b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b>",
+					new TextHint("<size=30><b>你触发了<color=#FF0000>SCP-106</color>的诱捕陷阱</b></size>",
 					new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 
 				foreach (GameObject gameObject in PlayerManager.players)
@@ -1819,7 +1890,7 @@ namespace CommonPlugin
 					player.inventory.ServerRemoveItem(player.inventory.UserInventory.Items.ElementAt(Random.Next(itemCount)).Key, null);
 
 				player.hints.Show(
-					new TextHint("<b>你在口袋空间中丢失了一件物品...</b>",
+					new TextHint("<size=30><b>你在口袋空间中丢失了一件物品...</b></size>",
 					new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 			}
 
@@ -1855,11 +1926,9 @@ namespace CommonPlugin
 		private IEnumerator<float> Timing_PersonMessage(PersonMessage personMessage, NetworkConnection networkConnection)
 		{
 			string strText;
-			personMessage.TextDisplay.Add(new Message(
-				"<color=#FF0000>欢</color><color=#FF4800>迎</color><color=#FF5D00>来</color><color=#FF7200>到</color>" +
-				"<color=#FF8A00>萌</color><color=#FFAF00>新</color><color=#FFD600>天</color><color=#FFF500>堂</color>" +
-				"<color=#E8FF00>服</color><color=#9DFF00>务</color><color=#48FF00>器</color>" +
-				"<color=#07FF00>(</color><color=#00FF2A>°</color><color=#00FF77>∀</color><color=#00FFC8>°</color><color=#00FFFF>)ﾉ</color>", 15));
+			personMessage.TextDisplay.Add(
+				new Message("欢迎来到萤火服务器(°∀°)ﾉ", 15));
+
 			for (; ; )
 			{
 				if (personMessage.TextDisplay.Count > 0)
