@@ -10,6 +10,7 @@ using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
+    /*
     [HarmonyPatch(typeof(HitboxIdentity), "CheckFriendlyFire", typeof(ReferenceHub), typeof(ReferenceHub), typeof(bool))]
     internal static class CheckFriendlyFirePatch
     {
@@ -49,13 +50,40 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    
-    [HarmonyPatch(typeof(LocalCurrentRoomEffects), "IsInDarkenedRoom", typeof(Vector3))]
-    internal static class IsInDarkenedRoomPatch
+    */
+
+    [HarmonyPatch(typeof(LocalCurrentRoomEffects), "FixedUpdate")]
+    internal static class NightVisionPatch
     {
-        private static bool Prefix(LocalCurrentRoomEffects __instance, Vector3 PositionToCheck)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            return ReferenceHub.GetHub(__instance.gameObject).playerId != EventHandlers.Scp035id;
+            List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
+
+            Label jccLable = generator.DefineLabel();
+
+            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Call
+            && (MethodInfo)i.operand == PropertySetter(typeof(LocalCurrentRoomEffects), nameof(LocalCurrentRoomEffects.NetworksyncFlicker)));
+
+            newInstructions[newInstructions.Count - 2].WithLabels(jccLable);
+
+            newInstructions.InsertRange(index, new CodeInstruction[]
+            {
+                new(OpCodes.Dup),
+                new(OpCodes.Brfalse_S, jccLable),
+                new(OpCodes.Pop),
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, Field(typeof(LocalCurrentRoomEffects), "_hub")),
+                new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
+                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Ceq),
+                new(OpCodes.Ldc_I4_0),
+                new(OpCodes.Ceq),
+            });
+
+            for (int z = 0; z < newInstructions.Count; z++)
+                yield return newInstructions[z];
+
+            ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
 
