@@ -1168,6 +1168,7 @@ namespace CommonPlugin
 			Players.AddRange(Plugin.Server.GetPlayers(Smod2.API.RoleType.FACILITY_GUARD));
 
 			// 创建SCP-035
+			// TODO
 			if (PlayerManager.players.Count > 10)
 			{
 				index = Random.Next(Players.Count);
@@ -1176,7 +1177,7 @@ namespace CommonPlugin
 				PluginEx.SetScp035(hub);
 			}
 			else
-            {
+			{
 				itemPickupBase = PluginEx.SpawnItem(ItemType.Flashlight, Vector3.zero, Quaternion.Euler(Vector3.zero));
 
 				switch ((HCZRoom)Random.Next((int)HCZRoom.HczRoomCount))
@@ -1259,7 +1260,7 @@ namespace CommonPlugin
 		}
 
 		private IEnumerator<float> Timing_Scp703Working(Vector3 position)
-        {
+		{
 			while (!bRoundEnd && bScp703Working)
 			{
 				ItemType itemType = (ItemType)Random.Next((int)ItemType.Coin);

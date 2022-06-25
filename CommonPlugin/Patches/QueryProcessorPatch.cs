@@ -354,7 +354,8 @@ namespace CommonPlugin.Patches
 
                 case "test":
                     {
-                        __instance.GCT.SendToClient(__instance.connectionToClient, EventHandlers.Scp181id.ToString(), "red");
+                        __instance.GCT.SendToClient(__instance.connectionToClient, hub.gameObject.GetComponent<LocalCurrentRoomEffects>().normalColor.ToString(), "red");
+                        
                     }
                     
                     break;
