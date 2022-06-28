@@ -32,7 +32,7 @@ using CommonPlugin.Patches;
 namespace CommonPlugin
 {
     public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerCheckRoundEnd, IEventHandlerContain106, IEventHandlerScpDeathAnnouncement,
-		IEventHandlerLCZDecontaminate, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave,
+		IEventHandlerLCZDecontaminate, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave, IEventHandlerHandcuffed,
 		IEventHandlerPlayerPickupItem, IEventHandlerPlayerTriggerTesla, IEventHandlerPocketDimensionDie, IEventHandlerPocketDimensionEnter, IEventHandlerPocketDimensionExit,
 		IEventHandlerRoundEnd, IEventHandlerRoundStart, IEventHandlerScp096AddTarget, IEventHandlerSCP914Activate, IEventHandlerSetRole, IEventHandlerTeamRespawn,
 		IEventHandlerWaitingForPlayers, IEventHandlerWarheadChangeLever, IEventHandlerWarheadStopCountdown, IEventHandlerWarheadDetonate, IEventHandlerSetInventory, IEventHandlerCassieTeamAnnouncement
@@ -476,6 +476,13 @@ namespace CommonPlugin
 			lock (MessageQueue.Messages)
 				MessageQueue.Messages.Remove(ev.Player.PlayerID);
 		}
+
+		// TODO
+		public void OnHandcuffed(PlayerHandcuffedEvent ev)
+        {
+			if (ev.Disarmer.GetHub().inventory.NetworkCurItem == ItemIdentifier.None)
+				ev.Allow = false;
+        }
 
 		public void OnPlayerPickupItem(PlayerPickupItemEvent ev)
 		{
@@ -1169,7 +1176,7 @@ namespace CommonPlugin
 
 			// 创建SCP-035
 			// TODO
-			if (PlayerManager.players.Count > 10)
+			if (PlayerManager.players.Count > 10 && Random.Next(2) == 0)
 			{
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();

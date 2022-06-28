@@ -1,8 +1,11 @@
-﻿using Mirror;
+﻿using System.Collections.Generic;
+using System.Reflection.Emit;
+using Mirror;
 using UnityEngine;
 using Smod2;
 using Smod2.API;
 using HarmonyLib;
+using NorthwoodLib.Pools;
 
 namespace CommonPlugin.Patches
 {
@@ -29,9 +32,23 @@ namespace CommonPlugin.Patches
     [HarmonyPatch(typeof(CharacterClassManager), "RpcPlaceBlood", typeof(Vector3), typeof(int), typeof(float))]
     internal static class PlaceBloodPatch
     {
-        private static bool Prefix(CharacterClassManager __instance, Vector3 pos, int type, float f)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            return false;
+            List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
+
+            newInstructions.Clear();
+
+            int index = 0;
+
+            newInstructions.InsertRange(index, new CodeInstruction[]
+            {
+                new(OpCodes.Ret),
+            });
+
+            for (int z = 0; z < newInstructions.Count; z++)
+                yield return newInstructions[z];
+
+            ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
 
