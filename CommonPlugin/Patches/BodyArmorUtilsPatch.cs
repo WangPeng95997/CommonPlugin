@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
+using InventorySystem;
 using InventorySystem.Items.Armor;
 using HarmonyLib;
 using NorthwoodLib.Pools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(BodyArmorUtils), "RemoveEverythingExceedingLimits")]
+    [HarmonyPatch(typeof(BodyArmorUtils), nameof(BodyArmorUtils.RemoveEverythingExceedingLimits), typeof(Inventory), typeof(BodyArmor), typeof(bool), typeof(bool))]
     internal static class RemoveEverythingPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -14,13 +15,7 @@ namespace CommonPlugin.Patches
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
             newInstructions.Clear();
-
-            int index = 0;
-
-            newInstructions.InsertRange(index, new CodeInstruction[]
-            {
-                new(OpCodes.Ret),
-            });
+            newInstructions.Add(new(OpCodes.Ret));
 
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];

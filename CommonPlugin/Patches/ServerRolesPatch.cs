@@ -19,7 +19,7 @@ namespace CommonPlugin.Patches
 
         private static void Postfix(ServerRoles __instance, string challenge, string response, string publickey, bool hide)
         {
-            if (GameCore.RoundStart.singleton.NetworkTimer == -2)
+            if (GameCore.RoundStart.singleton.NetworkTimer != -1)
                 Timing.CallDelayed(0.1f, () =>
                 {
                     transform.SetPositionAndRotation(new Vector3(330.2f, 573.8f, 0.0f), transform.rotation);

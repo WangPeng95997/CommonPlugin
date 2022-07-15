@@ -1,23 +1,25 @@
-﻿using Mirror;
+﻿using System.Collections.Generic;
+using System.Reflection.Emit;
 using PlayableScps;
-using UnityEngine;
 using HarmonyLib;
+using NorthwoodLib.Pools;
 
 namespace CommonPlugin.Patches
 {
-    /*
     [HarmonyPatch(typeof(Scp096), "ResetShield")]
     internal static class ResetShieldPatch
     {
-        private const float MaxShield  = EventHandlers.Scp096MaxShield;
-
-        private const float MaxShield2 = EventHandlers.Scp096MaxShield2;
-
-        private static bool Prefix(Scp096 __instance)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
+            List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
-            return true;
+            newInstructions.Clear();
+            newInstructions.Add(new(OpCodes.Ret));
+
+            for (int z = 0; z < newInstructions.Count; z++)
+                yield return newInstructions[z];
+
+            ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    */
 }

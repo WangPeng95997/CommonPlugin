@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using GameCore;
 using HarmonyLib;
 using NorthwoodLib.Pools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(Console), nameof(Console.AddDebugLog))]
-    internal static class AddDebugLogPatch
+    [HarmonyPatch(typeof(ReservedSlot), nameof(ReservedSlot.Reload))]
+    internal static class ReloadPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {

@@ -14,9 +14,8 @@ namespace CommonPlugin
 		version = "B",
 		SmodMajor = 3,
 		SmodMinor = 10,
-		SmodRevision = 1
+		SmodRevision = 2
 		)]
-
 	public class CommonPlugin : Plugin
 	{
 		public static Harmony Harmony { set; get; }

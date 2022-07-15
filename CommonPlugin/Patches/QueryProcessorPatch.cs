@@ -1,12 +1,7 @@
-﻿using Hints;
-using RemoteAdmin;
+﻿using RemoteAdmin;
 using UnityEngine;
 using HarmonyLib;
 using CommonPlugin.Extensions;
-
-using InventorySystem.Items.Firearms;
-using InventorySystem.Items.Pickups;
-using Mirror;
 
 namespace CommonPlugin.Patches
 {
@@ -14,6 +9,10 @@ namespace CommonPlugin.Patches
     internal static class QueryProcessorPatch
     {
         private static readonly System.Random Random = new System.Random();
+
+        private const string teamCommand = ".c";
+
+        private const string publicCommand = ".bc";
 
         private static bool Prefix(QueryProcessor __instance, string query)
         {
@@ -25,10 +24,10 @@ namespace CommonPlugin.Patches
             {
                 case "c":
                     {
-                        if (!CheckAllowSend(hub))
+                        if (!CheckSendMessage(hub, teamCommand, args.Length))
                             return false;
 
-                        strText = strText.Substring(".c".Length);
+                        strText = strText.Substring(teamCommand.Length);
                         if (hub.playerId == EventHandlers.Scp035id)
                         {
                             strText = $"[<color=#FF0000>SCP-035</color>] {hub.nicknameSync.MyNick}: {strText}";
@@ -131,10 +130,10 @@ namespace CommonPlugin.Patches
 
                 case "bc":
                     {
-                        if (!CheckAllowSend(hub))
+                        if (!CheckSendMessage(hub, publicCommand, args.Length))
                             return false;
 
-                        strText = strText.Substring(".bc".Length);
+                        strText = strText.Substring(publicCommand.Length);
                         if (hub.playerId == EventHandlers.Scp035id)
                         {
                             strText = $"[<color=#FF0000>SCP-035</color>]{hub.nicknameSync.MyNick}: {strText}";
@@ -240,40 +239,43 @@ namespace CommonPlugin.Patches
                     break;
 
                 case "all":
-                    switch (hub.serverRoles.smUserGroup.Name)
                     {
-                        case "owner":
-                        case "administrator":
-                            strText = strText.Substring(".all".Length);
-                            strText = $"[<color=#FF0090>管理员</color>] {hub.nicknameSync.MyNick}: {strText}";
-                            SendMessage(__instance, MessageType.AdminChat, hub.playerId, strText, 10);
-                            break;
-
-                        default:
+                        if (CheckPermissions(hub))
+                        {
+                            if (args.Length > 1)
+                            {
+                                strText = strText.Substring(".all".Length);
+                                strText = $"[<color=#FF0090>管理员</color>] {hub.nicknameSync.MyNick}: {strText}";
+                                SendMessage(__instance, MessageType.AdminChat, hub.playerId, strText, 10);
+                            }
+                            else
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败! 示例: .all xxxxxx", "red");
+                        }
+                        else
                             __instance.GCT.SendToClient(__instance.connectionToClient, "发送失败! 你没有该权限...", "red");
-                            break;
                     }
                     break;
 
                 case "scp":
-                    if (hub.characterClassManager.NetworkCurClass == RoleType.Scp079 && EventHandlers.Scp079id == 0)
                     {
-                        if (EventHandlers.Scp682id == 0 && PlayerManager.players.Count * 2 > Random.Next(100))
-                            PluginEx.SetScp682(hub);
+                        if (hub.characterClassManager.NetworkCurClass == RoleType.Scp079 && EventHandlers.Scp079id == 0)
+                        {
+                            if (EventHandlers.Scp682id == 0 && PlayerManager.players.Count * 2 > Random.Next(100))
+                                PluginEx.SetScp682(hub);
+                            else
+                                hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
+                            hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, "角色更换成功!", "green");
+                        }
                         else
-                            hub.characterClassManager.SetPlayersClass(PluginEx.GetRandomScp(), hub.gameObject, CharacterClassManager.SpawnReason.ForceClass);
-                        hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, "SCP更换成功!", "green");
+                            __instance.GCT.SendToClient(__instance.connectionToClient, "角色更换失败...", "red");
                     }
-                    else
-                        __instance.GCT.SendToClient(__instance.connectionToClient, "SCP更换失败...", "red");
                     break;
 
                 case "scp035":
                     {
-                        switch(hub.serverRoles.smUserGroup.Name)
+                        if (CheckPermissions(hub))
                         {
-                            case "owner":
-                            case "administrator":
+                            if (args.Length > 1)
                                 if (EventHandlers.Scp035id == 0)
                                 {
                                     ReferenceHub referenceHub = PluginEx.GetHub(int.Parse(args[1]));
@@ -287,21 +289,19 @@ namespace CommonPlugin.Patches
                                 }
                                 else
                                     __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 当前场上存在相同的SCP...", "red");
-                                break;
-
-                            default:
-                                __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 你没有该权限...", "red");
-                                break;
+                            else
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 示例: .scp035 [PlayerId]", "red");
                         }
+                        else
+                            __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-035创建失败! 你没有该权限...", "red");
                     }
                     break;
 
                 case "scp181":
                     {
-                        switch (hub.serverRoles.smUserGroup.Name)
+                        if (CheckPermissions(hub))
                         {
-                            case "owner":
-                            case "administrator":
+                            if (args.Length > 1)
                                 if (EventHandlers.Scp181id == 0)
                                 {
                                     ReferenceHub referenceHub = PluginEx.GetHub(int.Parse(args[1]));
@@ -315,21 +315,19 @@ namespace CommonPlugin.Patches
                                 }
                                 else
                                     __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建失败! 当前场上存在相同的SCP...", "red");
-                                break;
-
-                            default:
-                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败! 你没有该权限...", "red");
-                                break;
+                            else
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-181创建失败! 示例: .scp181 [PlayerId]", "red");
                         }
+                        else
+                            __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败! 你没有该权限...", "red");
                     }
                     break;
 
                 case "scp682":
                     {
-                        switch (hub.serverRoles.smUserGroup.Name)
+                        if (CheckPermissions(hub))
                         {
-                            case "owner":
-                            case "administrator":
+                            if (args.Length > 1)
                                 if (EventHandlers.Scp682id == 0)
                                 {
                                     ReferenceHub referenceHub = PluginEx.GetHub(int.Parse(args[1]));
@@ -343,38 +341,11 @@ namespace CommonPlugin.Patches
                                 }
                                 else
                                     __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建失败! 当前场上存在相同的SCP...", "red");
-                                break;
-
-                            default:
-                                __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败! 你没有该权限...", "red");
-                                break;
+                            else
+                                __instance.GCT.SendToClient(__instance.connectionToClient, "SCP-682创建失败! 示例: .scp682 [PlayerId]", "red");
                         }
-                    }
-                    break;
-
-                case "test":
-                    {
-                        __instance.GCT.SendToClient(__instance.connectionToClient, hub.gameObject.GetComponent<LocalCurrentRoomEffects>().normalColor.ToString(), "red");
-                        
-                    }
-                    
-                    break;
-
-                case "test1":
-                    {
-
-                    }
-                    break;
-
-                case "test2":
-                    {
-
-                    }
-                    break;
-
-                case "test3":
-                    {
-
+                        else
+                            __instance.GCT.SendToClient(__instance.connectionToClient, "创建失败! 你没有该权限...", "red");
                     }
                     break;
 
@@ -386,18 +357,31 @@ namespace CommonPlugin.Patches
             return false;
         }
 
-        private static bool CheckAllowSend(ReferenceHub hub)
+        private static bool CheckPermissions(ReferenceHub hub)
+        {
+            if (hub.serverRoles.smUserGroup != null)
+                return hub.serverRoles.smUserGroup.Name == "owner" || hub.serverRoles.smUserGroup.Name == "administrator";
+
+            return false;
+        }
+
+        private static bool CheckSendMessage(ReferenceHub hub, string command, int commandLength, int textSize = 0)
         {
             float cooldown = Time.time - hub.playerMovementSync.AFKTime;
 
-            if (cooldown < 5.0f)
-            {
-                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, $"发送失败! 请在{5 - (int)cooldown}秒后再试...", "red");
-                return false;
-            }
-            else if (hub.dissonanceUserSetup.AdministrativelyMuted)
+            if (hub.dissonanceUserSetup.AdministrativelyMuted)
             {
                 hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, "发送失败! 您已被管理员禁言...", "red");
+                return false;
+            }
+            else if (cooldown < 5.0f)
+            {
+                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, $"发送失败! 请在{5 - (int)cooldown}秒后重试...", "red");
+                return false;
+            }
+            else if (commandLength == 1)
+            {
+                hub.queryProcessor.GCT.SendToClient(hub.queryProcessor.connectionToClient, $"发送失败! 示例: {command} xxxxxx", "red");
                 return false;
             }
             hub.playerMovementSync.AFKTime = Time.time;

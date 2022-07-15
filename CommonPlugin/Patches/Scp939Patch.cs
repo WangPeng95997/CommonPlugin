@@ -27,6 +27,7 @@ namespace CommonPlugin.Patches
             });
 
             index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ldc_I4_0);
+
             newInstructions[index].WithLabels(retrunLabel);
 
             for (int z = 0; z < newInstructions.Count; z++)

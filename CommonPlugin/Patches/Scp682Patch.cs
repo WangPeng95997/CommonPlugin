@@ -1,32 +1,36 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using CustomPlayerEffects;
 using HarmonyLib;
 using NorthwoodLib.Pools;
 using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(PlayerPositionManager), "TransmitData")]
-    internal static class PlayerPositionManagerPatch
+    [HarmonyPatch(typeof(Scp939_VisionController), nameof(Scp939_VisionController.CanSee))]
+    internal static class CanSeePatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
-            Label normalVision = generator.DefineLabel();
+            Label continueLabel = generator.DefineLabel();
 
-            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Call && (MethodInfo)i.operand == Method(typeof(RoleExtensionMethods), nameof(RoleExtensionMethods.Is939))) + 2;
+            int index = 0;
+
+            newInstructions[index].WithLabels(continueLabel);
 
             newInstructions.InsertRange(index, new CodeInstruction[]
             {
-                new(OpCodes.Ldloc_S, 4),
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Ldfld, Field(typeof(PlayerEffect), nameof(PlayerEffect.Hub))),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
                 new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp682id))),
-                new(OpCodes.Beq_S, normalVision),
+                new(OpCodes.Bne_Un_S, continueLabel),
+                new(OpCodes.Ldc_I4_1),
+                new(OpCodes.Ret),
             });
-
-            newInstructions[174].WithLabels(normalVision);
 
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];

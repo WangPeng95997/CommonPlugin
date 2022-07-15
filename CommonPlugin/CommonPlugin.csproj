@@ -72,6 +72,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Desktop\Managed\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Desktop\Managed\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Desktop\Managed\UnityEngine.CoreModule.dll</HintPath>
@@ -83,11 +87,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\HealthController.cs" />
-    <Compile Include="Extensions\InventoryExtensions.cs" />
-    <Compile Include="Extensions\PlayerExtensions.cs" />
+    <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\PluginEx.cs" />
-    <Compile Include="Extensions\ReferenceHubExtensions.cs" />
-    <Compile Include="Extensions\Scp106Extensions.cs" />
     <Compile Include="CommonPlugin.cs" />
     <Compile Include="EventHandlers.cs" />
     <Compile Include="MessageQueue.cs" />
@@ -101,12 +102,12 @@
     <Compile Include="Patches\FirstPersonControllerPatch.cs" />
     <Compile Include="Patches\HealthStatPatch.cs" />
     <Compile Include="Patches\IdleModePatch.cs" />
-    <Compile Include="Patches\InventoryLimitsPatch.cs" />
     <Compile Include="Patches\InventoryPatch.cs" />
     <Compile Include="Patches\ItemDistributorPatch.cs" />
     <Compile Include="Patches\QueryProcessorPatch.cs" />
     <Compile Include="Patches\RadioPatch.cs" />
     <Compile Include="Patches\RagdollPatch.cs" />
+    <Compile Include="Patches\ReservedSlotPatch.cs" />
     <Compile Include="Patches\SCP035Patch.cs" />
     <Compile Include="Patches\Scp049Patch.cs" />
     <Compile Include="Patches\Scp079Patch.cs" />
@@ -118,7 +119,6 @@
     <Compile Include="Patches\Scp682Patch.cs" />
     <Compile Include="Patches\Scp939Patch.cs" />
     <Compile Include="Patches\ServerRolesPatch.cs" />
-    <Compile Include="Patches\SinkholePatch.cs" />
     <Compile Include="Patches\UsableItemsControllerPatch.cs" />
   </ItemGroup>
   <ItemGroup />

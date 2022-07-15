@@ -9,14 +9,13 @@ using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    // TODO
     /*
-    [HarmonyPatch(typeof(GameObject), "CallCmdHurtPlayer", typeof(GameObject))]
+    [HarmonyPatch(typeof(Scp173), "ServerKillPlayer", typeof(ReferenceHub))]
     internal static class Scp173Patch
     {
-        private static bool Prefix(GameObject target)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            return ReferenceHub.GetHub(target).playerId != EventHandlers.Scp035id;
+
         }
     }
     */
@@ -28,7 +27,7 @@ namespace CommonPlugin.Patches
         {
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
-            Label addVision = generator.DefineLabel();
+            Label removeLabel = generator.DefineLabel();
 
             int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Stloc_S) + 1;
 
@@ -37,12 +36,12 @@ namespace CommonPlugin.Patches
                 new(OpCodes.Ldloc_3),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
                 new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
-                new(OpCodes.Beq_S, addVision),
+                new(OpCodes.Beq_S, removeLabel),
             });
 
             index = newInstructions.FindIndex(i => i.opcode == OpCodes.Brfalse_S) + 1;
 
-            newInstructions[index].WithLabels(addVision);
+            newInstructions[index].WithLabels(removeLabel);
 
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];

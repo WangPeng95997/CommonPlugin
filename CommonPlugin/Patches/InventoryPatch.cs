@@ -1,12 +1,48 @@
-﻿using Hints;
+﻿using System.Collections.Generic;
+using System.Reflection.Emit;
+using Hints;
 using InventorySystem;
 using Smod2;
 using HarmonyLib;
+using NorthwoodLib.Pools;
+using static HarmonyLib.AccessTools;
+
 using CommonPlugin.Extensions;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(Inventory), "UserCode_CmdProcessHotkey", typeof(ActionName), typeof(ushort))]
+	[HarmonyPatch(typeof(Inventory), nameof(Inventory.ServerSelectItem), typeof(ushort))]
+	internal static class ServerSelectItemPatch
+	{
+		private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
+
+			Label continueLable = generator.DefineLabel();
+
+			int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ldarg_1);
+
+			newInstructions.InsertRange(index, new CodeInstruction[]
+			{
+				new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(newInstructions[index]),
+				new(OpCodes.Ldfld, Field(typeof(Inventory), "_hub")),
+				new(OpCodes.Ldfld, Field(typeof(ReferenceHub), nameof(ReferenceHub.scp106PlayerScript))),
+				new(OpCodes.Ldfld, Field(typeof(Scp106PlayerScript), nameof(Scp106PlayerScript.goingViaThePortal))),
+				new(OpCodes.Brfalse_S, continueLable),
+			});
+
+			index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ldflda) - 2;
+
+			newInstructions[index].WithLabels(continueLable);
+
+			for (int z = 0; z < newInstructions.Count; z++)
+				yield return newInstructions[z];
+
+			ListPool<CodeInstruction>.Shared.Return(newInstructions);
+		}
+	}
+
+	[HarmonyPatch(typeof(Inventory), nameof(Inventory.UserCode_CmdProcessHotkey), typeof(ActionName), typeof(ushort))]
     internal static class CmdProcessHotkeyPatch
     {
 		private static Plugin Plugin = PluginManager.Manager.Plugins[0];

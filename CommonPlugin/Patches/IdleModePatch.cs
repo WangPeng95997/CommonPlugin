@@ -13,13 +13,7 @@ namespace CommonPlugin.Patches
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
             newInstructions.Clear();
-
-            int index = 0;
-
-            newInstructions.InsertRange(index, new CodeInstruction[]
-            {
-                new(OpCodes.Ret),
-            });
+            newInstructions.Add(new(OpCodes.Ret));
 
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using CustomPlayerEffects;
 using Hints;
@@ -31,11 +30,11 @@ using CommonPlugin.Patches;
 
 namespace CommonPlugin
 {
-    public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerCheckRoundEnd, IEventHandlerContain106, IEventHandlerScpDeathAnnouncement,
-		IEventHandlerLCZDecontaminate, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave, IEventHandlerHandcuffed,
-		IEventHandlerPlayerPickupItem, IEventHandlerPlayerTriggerTesla, IEventHandlerPocketDimensionDie, IEventHandlerPocketDimensionEnter, IEventHandlerPocketDimensionExit,
-		IEventHandlerRoundEnd, IEventHandlerRoundStart, IEventHandlerScp096AddTarget, IEventHandlerSCP914Activate, IEventHandlerSetRole, IEventHandlerTeamRespawn,
-		IEventHandlerWaitingForPlayers, IEventHandlerWarheadChangeLever, IEventHandlerWarheadStopCountdown, IEventHandlerWarheadDetonate, IEventHandlerSetInventory, IEventHandlerCassieTeamAnnouncement
+    public class EventHandlers : IEventHandler079LevelUp, IEventHandlerCheckEscape, IEventHandlerConsumableUse, IEventHandlerCheckRoundEnd, IEventHandlerContain106,
+		IEventHandlerScpDeathAnnouncement, IEventHandlerLCZDecontaminate, IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerJoin, IEventHandlerPlayerLeave,
+		IEventHandlerHandcuffed, IEventHandlerPlayerPickupItem, IEventHandlerPocketDimensionDie, IEventHandlerPocketDimensionEnter, IEventHandlerPocketDimensionExit, IEventHandlerRoundEnd,
+		IEventHandlerRoundStart, IEventHandlerScp096AddTarget, IEventHandlerSCP914Activate, IEventHandlerSetRole, IEventHandlerTeamRespawn, IEventHandlerWaitingForPlayers,
+		IEventHandlerWarheadChangeLever, IEventHandlerWarheadStopCountdown, IEventHandlerWarheadDetonate, IEventHandlerSetInventory, IEventHandlerCassieTeamAnnouncement
 	{
 		public CommonPlugin Plugin { get; set; }
 
@@ -58,33 +57,30 @@ namespace CommonPlugin
 		public const float ChaosMarauderMaxHP = 150.0f;
 
 		public const float Scp0492MaxHP = 500.0f;
-		public const float Scp049MaxHP = 2500.0f;
+		public const float Scp049MaxHP = 3000.0f;
 		public const float Scp079MaxHP = 100000.0f;
 		public const float Scp096MaxHP = 2000.0f;
 		public const float Scp106MaxHP = 1200.0f;
-		public const float Scp173MaxHP = 3000.0f;
+		public const float Scp173MaxHP = 3200.0f;
 		public const float Scp682MaxHP = 3600.0f;
-		public const float Scp939MaxHP = 2200.0f;
+		public const float Scp939MaxHP = 2400.0f;
 
 		public const int lateJoinTime = 90;
-		private const int maxPlayer = 33;
+
+		private const float scpHeal = 10.0f;
+		private const int maxPlayer = 25;
 		private const float medkitHeal = 70.0f;
 		private const float medkitHeal2 = 10.0f;
 		private const int selfHealCooldown = 3;
 		private const float traumaDamage = 0.25f;
 
-		private const float Scp035Hit = 4.0f;
-		private const float Scp035Heal = 35.0f;
-		private const float Scp049Heal = 5.0f;
-		private const float Scp049Heal2 = 2.0f;
+		private const float scp035Hit = 4.0f;
+		private const float scp035Heal = 35.0f;
 		private const int Scp079ChangeTime = 30;
 		private const int PowerCutCooldown = 30;
-		public const float Scp096MaxShield = 1000.0f;
-		public const float Scp096MaxShield2 = 1250.0f;
-		private const float Scp096Heal = 2.0f;
-		public const int Scp106Cooldown = 30;
+		private const float scp096Heal = 5.0f;
+		
 		private const float Scp106Kill = 20.0f;
-		private const float Scp173Heal = 7.5f;
 		private const float Scp682Heal = 8.0f;
 		private const float Scp682Kill = 40.0f;
 		private const float Scp939Hit = 25.0f;
@@ -101,12 +97,13 @@ namespace CommonPlugin
 		public static int Scp079id = 0;
 		public static int Scp181id = 0;
 		public static int Scp682id = 0;
-		public static int Scp703id = 0;
+		public static int Scp703ItemId = 0;
 
 		public static ushort Scp035ItemId = 0;
 		private static Scp079Level Scp079Lv = Scp079Level.Level_1;
 		public static int Scp106LastPlace = 0;
 
+		public const int Scp106Cooldown = 30;
 		public static bool bScp035Detected = false;
 		public static bool bScp703Working = false;
 
@@ -215,10 +212,7 @@ namespace CommonPlugin
 
 		public void OnDecontaminate() => bScp703Working = false;
 
-		public void OnDetonate()
-        {
-			Timing.RunCoroutine(Timing_OnDetonate());
-        }
+		public void OnDetonate() => Timing.RunCoroutine(Timing_OnDetonate());
 
 		public void OnConsumableUse(PlayerConsumableUseEvent ev)
 		{
@@ -233,7 +227,7 @@ namespace CommonPlugin
 					if (hub.playerId != Scp035id)
 						healthControler.MaxHealth = healthControler.MaxHealth + medkitHeal2 > healthControler.MaxHealth2 ? healthControler.MaxHealth2 : healthControler.MaxHealth + medkitHeal2;
 
-					healthStat.ServerHeal(hub.playerId == Scp035id ? Scp035Heal : medkitHeal);
+					healthStat.ServerHeal(hub.playerId == Scp035id ? scp035Heal : medkitHeal);
 					hub.playerEffectsController.UseMedicalItem(itemType);
 					break;
 
@@ -246,8 +240,7 @@ namespace CommonPlugin
 					break;
 
 				case ItemType.SCP207:
-					if (hub.playerId != Scp035id)
-						hub.playerEffectsController.GetEffect<Scp207>().Intensity = 1;
+					hub.playerEffectsController.GetEffect<Scp207>().Intensity = 1;
 					break;
 
 				case ItemType.Adrenaline:
@@ -266,7 +259,8 @@ namespace CommonPlugin
 			if (GameCore.RoundStart.singleton.NetworkTimer != -1 || ev.DamageTypeVar == DamageType.NONE)
 				return;
 
-			dWarheadRate += Random.NextDouble() + 0.345;
+			//dWarheadRate += Random.NextDouble() + 0.345;
+			dWarheadRate += Random.NextDouble();
 
 			ReferenceHub killer = ev.Killer.GetHub();
 			ReferenceHub player = ev.Player.GetHub();
@@ -370,7 +364,7 @@ namespace CommonPlugin
 						case DamageType.REVOLVER:
 						case DamageType.AK:
 						case DamageType.SHOTGUN:
-							ev.Damage = (ev.Damage > 40.0f) ? Scp035Hit * 4 : Scp035Hit;
+							ev.Damage = (ev.Damage > 40.0f) ? scp035Hit * 4 : scp035Hit;
 							healthController.MaxHealth -= ev.Damage > 40.0f ? 4.0f : 1.0f;
 							return;
 					}
@@ -433,7 +427,7 @@ namespace CommonPlugin
 						{
 							ev.Damage = Random.Next(70, 100);
 							healthController.MaxHealth -= Scp939Hit;
-							player.playerEffectsController.EnableEffect<Amnesia>(3.0f, true);
+							player.playerEffectsController.EnableEffect<Amnesia>(5.0f, true);
 						}
 						return;
 				}
@@ -477,11 +471,15 @@ namespace CommonPlugin
 				MessageQueue.Messages.Remove(ev.Player.PlayerID);
 		}
 
-		// TODO
 		public void OnHandcuffed(PlayerHandcuffedEvent ev)
         {
-			if (ev.Disarmer.GetHub().inventory.NetworkCurItem == ItemIdentifier.None)
+			if (ev.Player.GetHub().inventory.NetworkCurItem != ItemIdentifier.None)
+            {
+				ev.Disarmer.GetHub().hints.Show(
+					new TextHint("<size=30><b>缴械失败, 目标单位持有物品</b></size>",
+					new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 				ev.Allow = false;
+			}
         }
 
 		public void OnPlayerPickupItem(PlayerPickupItemEvent ev)
@@ -541,12 +539,6 @@ namespace CommonPlugin
 					}
 					break;
 			}
-		}
-
-		public void OnPlayerTriggerTesla(PlayerTriggerTeslaEvent ev)
-		{
-			if (ev.Player.PlayerID == Scp181id)
-				ev.Triggerable = false;
 		}
 
 		public void OnPocketDimensionDie(PlayerPocketDimensionDieEvent ev)
@@ -826,7 +818,8 @@ namespace CommonPlugin
 
 		public void OnTeamRespawn(TeamRespawnEvent ev)
 		{
-			dWarheadRate += ((maxPlayer - PlayerManager.players.Count + 10) * 0.6);
+			//dWarheadRate += (maxPlayer - PlayerManager.players.Count + 10) * 0.6;
+			dWarheadRate += (maxPlayer - PlayerManager.players.Count + 10) * 0.74;
 
 			foreach (Ragdoll doll in Object.FindObjectsOfType<Ragdoll>())
 				NetworkServer.Destroy(doll.gameObject);
@@ -852,7 +845,7 @@ namespace CommonPlugin
 						case ItemType.Ammo762x39:
 						case ItemType.Ammo9x19:
 						case ItemType.Painkillers:
-						case ItemType.Coin:
+						
 						case ItemType.ArmorLight:
 						case ItemType.ArmorCombat:
 						case ItemType.ArmorHeavy:
@@ -860,7 +853,12 @@ namespace CommonPlugin
 							break;
 
 						case ItemType.Flashlight:
-							if (Scp703id != itemPickupBase.NetworkInfo.Serial)
+							if (Scp703ItemId != itemPickupBase.NetworkInfo.Serial)
+								itemPickupBase.DestroySelf();
+							break;
+
+						case ItemType.Coin:
+							if (Scp035ItemId != itemPickupBase.NetworkInfo.Serial)
 								itemPickupBase.DestroySelf();
 							break;
 
@@ -935,7 +933,7 @@ namespace CommonPlugin
 			Scp079id = 0;
 			Scp181id = 0;
 			Scp682id = 0;
-			Scp703id = 0;
+			Scp703ItemId = 0;
 
 			Scp035ItemId = 0;
 			Scp079Lv = Scp079Level.Level_1;
@@ -979,6 +977,7 @@ namespace CommonPlugin
 
 				yield return Timing.WaitForSeconds(1.0f);
 			}
+			PluginEx.ClearServerBadge(hub.serverRoles);
 
 			yield break;
 		}
@@ -1153,7 +1152,7 @@ namespace CommonPlugin
 			NetworkServer.Spawn(itemPickupBase.gameObject);
 
 			bScp703Working = true;
-			Scp703id = itemPickupBase.NetworkInfo.Serial;
+			Scp703ItemId = itemPickupBase.NetworkInfo.Serial;
 			Timing.RunCoroutine(Timing_Scp703Working(position));
 			
 			// 选取所有的D级人员
@@ -1166,8 +1165,8 @@ namespace CommonPlugin
 			{
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
-				Players.RemoveAt(index);
 				PluginEx.SetScp181(hub);
+				Players.RemoveAt(index);
 			}
 
 			// 在基础上增加科学家和设施警卫
@@ -1175,17 +1174,16 @@ namespace CommonPlugin
 			Players.AddRange(Plugin.Server.GetPlayers(Smod2.API.RoleType.FACILITY_GUARD));
 
 			// 创建SCP-035
-			// TODO
 			if (PlayerManager.players.Count > 10 && Random.Next(2) == 0)
 			{
 				index = Random.Next(Players.Count);
 				hub = Players[index].GetHub();
-				Players.RemoveAt(index);
 				PluginEx.SetScp035(hub);
+				Players.RemoveAt(index);
 			}
 			else
 			{
-				itemPickupBase = PluginEx.SpawnItem(ItemType.Flashlight, Vector3.zero, Quaternion.Euler(Vector3.zero));
+				itemPickupBase = PluginEx.SpawnItem(ItemType.Coin, Vector3.zero, Quaternion.Euler(Vector3.zero));
 
 				switch ((HCZRoom)Random.Next((int)HCZRoom.HczRoomCount))
 				{
@@ -1287,10 +1285,10 @@ namespace CommonPlugin
 						break;
 				}
 
-				yield return Timing.WaitForSeconds(Random.Next(25, 40));
+				yield return Timing.WaitForSeconds(Random.Next(25, 35));
 			}
 
-			Scp703id = 0;
+			Scp703ItemId = 0;
 
 			yield break;
 		}
@@ -1308,7 +1306,6 @@ namespace CommonPlugin
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
-								// 希望卡没事[保佑][保佑][保佑]
 								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 
@@ -1334,7 +1331,6 @@ namespace CommonPlugin
 						switch (hub.inventory.NetworkCurItem.TypeId)
 						{
 							case ItemType.KeycardJanitor:
-								// 希望卡没事[保佑][保佑][保佑]
 								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 
@@ -1476,7 +1472,6 @@ namespace CommonPlugin
 								break;
 
 							case ItemType.KeycardO5:
-								// 希望卡没事[保佑][保佑][保佑]
 								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 						}
@@ -1552,7 +1547,6 @@ namespace CommonPlugin
 								break;
 
 							case ItemType.KeycardO5:
-								// 希望卡没事[保佑][保佑][保佑]
 								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 						}
@@ -1628,7 +1622,6 @@ namespace CommonPlugin
 								break;
 
 							case ItemType.KeycardO5:
-								// 希望卡没事[保佑][保佑][保佑]
 								hub.inventory.NetworkCurItem = ItemIdentifier.None;
 								break;
 						}
@@ -1663,18 +1656,18 @@ namespace CommonPlugin
 
 									PluginEx.SetServerBadge(hub.serverRoles, "SCP-049");
 									hub.hints.Show(
-										new TextHint("<b>强化成功!</b>",
+										new TextHint("<size=30><b>强化成功!\n\n<align=left>HS: 200(+200)\nHP: 3300(+300)</align></b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 								}
 								else
 									hub.hints.Show(
-										new TextHint("<b>强化失败!</b>",
+										new TextHint("<size=30><b>强化失败!</b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								break;
 
 							case RoleType.Scp0492:
 								hub.hints.Show(
-									new TextHint("<b>强化失败!</b>",
+									new TextHint("<size=30><b>强化失败!</b></size>",
 									new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								break;
 
@@ -1682,19 +1675,19 @@ namespace CommonPlugin
 								if (!healthController.Evolved)
 								{
 									healthController.Evolved = true;
-									healthController.MaxHealth = healthController.MaxHealth + 250.0f;
-									hub.GetHealthStat().ServerHeal(250.0f);
+									healthController.MaxHealth = healthController.MaxHealth + 200.0f;
+									hub.GetHealthStat().ServerHeal(200.0f);
 
-									(hub.gameObject.GetComponent<PlayableScpsController>().CurrentScp as Scp096).CurMaxShield += 250.0f;
+									(hub.gameObject.GetComponent<PlayableScpsController>().CurrentScp as Scp096).CurMaxShield += 300.0f;
 
 									PluginEx.SetServerBadge(hub.serverRoles, "SCP-096");
 									hub.hints.Show(
-										new TextHint("<b>强化成功!</b>\n<b>AHP: 1250(+250)\n<b>HP: 2250(+250)</b></b>",
+										new TextHint("<size=30><b>强化成功!\n\n<align=left>HS: 1100(+300)\nHP: 2200(+200)</align></b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 								}
 								else
 									hub.hints.Show(
-										new TextHint("<b>强化失败!</b>",
+										new TextHint("<size=30><b>强化失败!</b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								break;
 
@@ -1707,12 +1700,12 @@ namespace CommonPlugin
 
 									PluginEx.SetServerBadge(hub.serverRoles, "SCP-106");
 									hub.hints.Show(
-										new TextHint("<b>强化成功!</b>",
+										new TextHint("<size=30><b>强化成功!\n\n<align=left>HP: 1500(+300)\n攻击时腐蚀目标身上随机一件物品</align></b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 								}
 								else
 									hub.hints.Show(
-										new TextHint("<b>强化失败!</b>",
+										new TextHint("<size=30><b>强化失败!</b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								break;
 
@@ -1720,16 +1713,18 @@ namespace CommonPlugin
 								if (!healthController.Evolved)
 								{
 									healthController.Evolved = true;
-									hub.playerEffectsController.GetEffect<Scp207>().Intensity = 4;
-									
+									hub.playerEffectsController.GetEffect<MovementBoost>().Intensity = 49;
+									hub.playerEffectsController.EnableEffect<MovementBoost>(0.0f, false);
+
+									(hub.gameObject.GetComponent<PlayableScpsController>().CurrentScp as Scp173).Shield.Limit += 300.0f;
 									PluginEx.SetServerBadge(hub.serverRoles, "SCP-173");
 									hub.hints.Show(
-										new TextHint("<b>强化成功!</b>\n<b><color=#FF0000>SCP-207</color>效果X4</b>",
+										new TextHint("<size=30><b>强化成功!\n\n<align=left>HS: 1500(+300)\n获得50%移动速度加成</align></b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 								}
 								else
 									hub.hints.Show(
-										new TextHint("<b>强化失败!</b>",
+										new TextHint("<size=30><b>强化失败!</b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								break;
 
@@ -1738,20 +1733,20 @@ namespace CommonPlugin
 								if (!healthController.Evolved && hub.playerId != Scp682id)
 								{
 									healthController.Evolved = true;
-									healthController.MaxHealth = healthController.MaxHealth + 200.0f;
-									hub.GetHealthStat().ServerHeal(200.0f);
+									healthController.MaxHealth = healthController.MaxHealth + 300.0f;
+									hub.GetHealthStat().ServerHeal(300.0f);
 
 									AhpStat.AhpProcess ahpProcess = hub.GetAhpProcess();
 									ahpProcess.Limit += 250.0f;
 
 									PluginEx.SetServerBadge(hub.serverRoles, hub.characterClassManager.NetworkCurClass == RoleType.Scp93953 ? "SCP-939-53" : "SCP-939-89");
 									hub.hints.Show(
-										new TextHint("<b>强化成功!</b>",
+										new TextHint("<size=30><b>强化成功!\n\n<align=left>HS: 850(+250)\nHP: 2700(+300)</align></b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 5.0f));
 								}
 								else
 									hub.hints.Show(
-										new TextHint("<b>强化失败!</b>",
+										new TextHint("<size=30><b>强化失败!</b></size>",
 										new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 								break;
 						}
@@ -1792,9 +1787,6 @@ namespace CommonPlugin
 						hub.inventory.ServerAddItem(ItemType.SCP207);
 					else if (Random.Next(10) == 0)
 						hub.inventory.ServerAddItem(ItemType.SCP2176);
-
-					hub.inventory.UserInventory.ReserveAmmo[Random.Next(2) == 0 ? ItemType.Ammo556x45 : Random.Next(2) == 0 ? ItemType.Ammo762x39 : ItemType.Ammo9x19] = 20;
-					hub.inventory.SendAmmoNextFrame = true;
 					break;
 
 				case RoleType.Scientist:
@@ -1813,9 +1805,6 @@ namespace CommonPlugin
 						hub.inventory.ServerAddItem(ItemType.SCP1853);
 					else if (Random.Next(100) == 0)
 						(hub.inventory.ServerAddItem(ItemType.MicroHID).PickupDropModel as FirearmPickup).NetworkStatus = new FirearmStatus(0, FirearmStatusFlags.None, 0);
-
-					hub.inventory.UserInventory.ReserveAmmo[Random.Next(2) == 0 ? ItemType.Ammo556x45 : Random.Next(2) == 0 ? ItemType.Ammo762x39 : ItemType.Ammo9x19] = 20;
-					hub.inventory.SendAmmoNextFrame = true;
 					break;
 
 				case RoleType.ChaosMarauder:
@@ -1823,8 +1812,8 @@ namespace CommonPlugin
 					break;
 					
 				case RoleType.Scp049:
-					healthControler.Heal = Scp049Heal;
-					healthControler.Heal2 = Scp049Heal2;
+					healthControler.Heal = scpHeal;
+					healthControler.Heal2 = 2.0f;
 					Timing.RunCoroutine(Timing_SelfHealth(hub, healthControler, hub.characterClassManager.NetworkCurClass));
 					break;
 
@@ -1833,20 +1822,20 @@ namespace CommonPlugin
 					break;
 
 				case RoleType.Scp096:
-					healthControler.Heal = Scp096Heal;
+					healthControler.Heal = scp096Heal;
 					Timing.RunCoroutine(Timing_SelfHealth(hub, healthControler, hub.characterClassManager.NetworkCurClass));
 					break;
 
 				case RoleType.Scp106:
 					hub.inventory.ServerAddItem(ItemType.KeycardJanitor);
 					hub.hints.Show(
-						new TextHint($"<voffset=27em><size=120><b> </b></size>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
-						$"<size=35><b>按下Ctrl键可以在地上创建一个<color=#FF0000>诱捕陷阱</color></b></size>\n<size=35><b>触发陷阱的人会被传送至口袋空间</b></size></voffset>",
+						new TextHint($"<voffset=10em><size=220><color=#FF0000><b> </b></color></size></voffset>" +
+						$"\n\n\n\n<size=30><b>按下Ctrl键可以在地上创建一个<color=#FF0000>诱捕陷阱</color>, 触发陷阱的人会被传送至口袋空间</b></size>",
 						new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 15.0f));
 					break;
 
 				case RoleType.Scp173:
-					healthControler.Heal = Scp173Heal;
+					healthControler.Heal = scpHeal;
 					Timing.RunCoroutine(Timing_SelfHealth(hub, healthControler, hub.characterClassManager.NetworkCurClass));
 					break;
 
@@ -1864,8 +1853,14 @@ namespace CommonPlugin
 							hub.playerEffectsController.GetEffect<CustomPlayerEffects.Visuals939>().Intensity = 0;
 						});
 					}
+					else
+                    {
+						healthControler.Heal = scpHeal;
+						Timing.RunCoroutine(Timing_SelfHealth(hub, healthControler, hub.characterClassManager.NetworkCurClass));
+					}
 					break;
 			}
+			hub.scp106PlayerScript.NetworkportalPosition = Vector3.zero;
 
 			yield break;
 		}
@@ -1905,7 +1900,7 @@ namespace CommonPlugin
 			foreach (Scp079PlayerScript scp079PlayerScript in Scp079PlayerScript.instances)
 				scp079PlayerScript.ServerProcessKillAssist(player, ExpGainType.PocketAssist);
 
-			yield return Timing.WaitForSeconds(3.0f);
+			yield return Timing.WaitForSeconds(2.75f);
 
 			player.playerEffectsController.EnableEffect<Corroding>(0.0f, false);
 			player.scp106PlayerScript.goingViaThePortal = false;

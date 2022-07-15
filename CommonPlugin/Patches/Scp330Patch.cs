@@ -13,7 +13,7 @@ namespace CommonPlugin.Patches
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub ply, byte colliderId)
         {
-            if (GameCore.RoundStart.singleton.NetworkTimer == -2)
+            if (GameCore.RoundStart.singleton.NetworkTimer != -1)
             {
                 ply.hints.Show(
                     new TextHint("<size=30><b>游戏还未开始, 请勿触碰!</b></size>",
@@ -128,7 +128,7 @@ namespace CommonPlugin.Patches
             if (hub.playerId != EventHandlers.Scp035id)
             {
                 hub.playerEffectsController.EnableEffect<Invigorated>(1.0f, true);
-                hub.playerEffectsController.GetEffect<MovementBoost>().Intensity = 3;
+                hub.playerEffectsController.GetEffect<MovementBoost>().Intensity = 4;
                 hub.playerEffectsController.EnableEffect<MovementBoost>(0.0f, false);
             }
 
