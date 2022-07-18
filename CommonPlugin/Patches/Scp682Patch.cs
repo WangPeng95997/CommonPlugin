@@ -26,7 +26,7 @@ namespace CommonPlugin.Patches
                 new(OpCodes.Ldarg_1),
                 new(OpCodes.Ldfld, Field(typeof(PlayerEffect), nameof(PlayerEffect.Hub))),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp682id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp682id))),
                 new(OpCodes.Bne_Un_S, continueLabel),
                 new(OpCodes.Ldc_I4_1),
                 new(OpCodes.Ret),

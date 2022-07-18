@@ -29,6 +29,7 @@ namespace CommonPlugin.Patches
 				new(OpCodes.Ldfld, Field(typeof(ReferenceHub), nameof(ReferenceHub.scp106PlayerScript))),
 				new(OpCodes.Ldfld, Field(typeof(Scp106PlayerScript), nameof(Scp106PlayerScript.goingViaThePortal))),
 				new(OpCodes.Brfalse_S, continueLable),
+				new(OpCodes.Ret),
 			});
 
 			index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ldflda) - 2;
@@ -47,8 +48,6 @@ namespace CommonPlugin.Patches
     {
 		private static Plugin Plugin = PluginManager.Manager.Plugins[0];
 
-		private const int Scp106Cooldown = EventHandlers.Scp106Cooldown;
-
 		private static bool Prefix(Inventory __instance, ActionName hotkeyButtonPressed, ushort clientsideDesiredItem)
         {
 			ReferenceHub hub = ReferenceHub.GetHub(__instance.gameObject);
@@ -60,7 +59,7 @@ namespace CommonPlugin.Patches
             {
 				int duration = Plugin.Server.Round.Duration - EventHandlers.Scp106LastPlace;
 
-				if (duration > Scp106Cooldown)
+				if (duration > EventHandlers.scp106Cooldown)
 				{
 					PluginEx.PlaceTrapItem(hub.transform.position);
 
@@ -71,7 +70,7 @@ namespace CommonPlugin.Patches
 				}
 				else
 					hub.hints.Show(
-						new TextHint($"<size=30><b>还需要<color=#FF0000>{Scp106Cooldown - duration}</color>秒才能放置诱捕陷阱</b></size>",
+						new TextHint($"<size=30><b>还需要<color=#FF0000>{EventHandlers.scp106Cooldown - duration}</color>秒才能放置诱捕陷阱</b></size>",
 						new HintParameter[] { new StringHintParameter("") }, HintEffectPresets.FadeInAndOut(0f, 1f, 0f), 3.0f));
 
 				return false;

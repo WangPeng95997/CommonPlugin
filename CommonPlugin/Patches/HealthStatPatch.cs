@@ -4,7 +4,7 @@ using CommonPlugin.Components;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(HealthStat), "MaxValue", MethodType.Getter)]
+    [HarmonyPatch(typeof(HealthStat), nameof(HealthStat.MaxValue), MethodType.Getter)]
     internal static class MaxValuePatch
     {
         private const float ClassD = EventHandlers.ClassdMaxHP;
@@ -95,7 +95,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(HealthStat), "ServerHeal", typeof(float))]
+    [HarmonyPatch(typeof(HealthStat), nameof(HealthStat.ServerHeal), typeof(float))]
     internal static class ServerHealPatch
     {
         private static bool Prefix(HealthStat __instance, float healAmount)

@@ -1,35 +1,47 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using Mirror;
 using UnityEngine;
-using Smod2;
-using Smod2.API;
 using HarmonyLib;
 using NorthwoodLib.Pools;
+using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(CharacterClassManager), "IsAnyScp")]
+    [HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.IsAnyScp))]
     internal static class IsAnyScpPatch
     {
-        private static void Postfix(CharacterClassManager __instance, ref bool __result)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            if (!__result)
-                __result = ReferenceHub.GetHub(__instance.gameObject).playerId == EventHandlers.Scp035id;
+            List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
+
+            Label continueLable = generator.DefineLabel();
+
+            int index = 0;
+
+            newInstructions.InsertRange(index, new CodeInstruction[]
+            {
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, Field(typeof(CharacterClassManager), "_hub")),
+                new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Ceq),
+                new(OpCodes.Brfalse_S, continueLable),
+                new(OpCodes.Ldc_I4_1),
+                new(OpCodes.Ret),
+            });
+
+            index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ret) + 1;
+
+            newInstructions[index].WithLabels(continueLable);
+
+            for (int z = 0; z < newInstructions.Count; z++)
+                yield return newInstructions[z];
+
+            ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
 
-    [HarmonyPatch(typeof(CharacterClassManager), "IsTargetForSCPs")]
-    internal static class IsTargetForSCPsPatch
-    {
-        private static void Postfix(CharacterClassManager __instance, ref bool __result)
-        {
-            if (__result)
-                __result = ReferenceHub.GetHub(__instance.gameObject).playerId != EventHandlers.Scp035id;
-        }
-    }
-
-    [HarmonyPatch(typeof(CharacterClassManager), "RpcPlaceBlood", typeof(Vector3), typeof(int), typeof(float))]
+    [HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.RpcPlaceBlood), typeof(Vector3), typeof(int), typeof(float))]
     internal static class PlaceBloodPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -46,24 +58,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CharacterClassManager), "TargetRawDeathScreen", typeof(NetworkConnection))]
-    internal static class TargetRawDeathScreenPatch
-    {
-        private static Round Round = PluginManager.Manager.Server.Round;
-
-        private const int lateJoinTime = EventHandlers.lateJoinTime;
-
-        private static bool Prefix(CharacterClassManager __instance, NetworkConnection conn)
-        {
-            bool bSpawnClass = Round.Duration < lateJoinTime;
-            if (bSpawnClass)
-                __instance.SetClassIDAdv(RoleType.ClassD, false, CharacterClassManager.SpawnReason.LateJoin);
-
-            return !bSpawnClass;
-        }
-    }
-
-    [HarmonyPatch(typeof(CharacterClassManager), "UserCode_CmdRequestHideTag")]
+    [HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.UserCode_CmdRequestHideTag))]
     internal static class CmdRequestHideTagPatch
     {
         private static bool Prefix(CharacterClassManager __instance)

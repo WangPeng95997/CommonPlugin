@@ -6,8 +6,7 @@ using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    
-    [HarmonyPatch(typeof(FirstPersonController), "ModifyStamina", typeof(float))]
+    [HarmonyPatch(typeof(FirstPersonController), nameof(FirstPersonController.ModifyStamina), typeof(float))]
     internal static class ModifyStaminaPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -31,7 +30,7 @@ namespace CommonPlugin.Patches
         }
     }
     
-    [HarmonyPatch(typeof(FirstPersonController), "ResetStamina")]
+    [HarmonyPatch(typeof(FirstPersonController), nameof(FirstPersonController.ResetStamina))]
     internal static class ResetStaminaPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)

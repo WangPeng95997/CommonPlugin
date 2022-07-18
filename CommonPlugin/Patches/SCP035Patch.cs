@@ -4,14 +4,13 @@ using System.Reflection.Emit;
 using Footprinting;
 using InventorySystem.Items.ThrowableProjectiles;
 using PlayerStatsSystem;
-using UnityEngine;
 using HarmonyLib;
 using NorthwoodLib.Pools;
 using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(HitboxIdentity), "CheckFriendlyFire", typeof(ReferenceHub), typeof(ReferenceHub), typeof(bool))]
+    [HarmonyPatch(typeof(HitboxIdentity), nameof(HitboxIdentity.CheckFriendlyFire), typeof(ReferenceHub), typeof(ReferenceHub), typeof(bool))]
     internal static class CheckFriendlyFirePatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -28,12 +27,12 @@ namespace CommonPlugin.Patches
 
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Beq_S, returnLable),
 
                 new(OpCodes.Ldarg_1),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Beq_S, returnLable),
 
                 new(OpCodes.Pop),
@@ -88,7 +87,7 @@ namespace CommonPlugin.Patches
     }
 
     [HarmonyPatch(typeof(LocalCurrentRoomEffects), "FixedUpdate")]
-    internal static class NightVisionPatch
+    internal static class FixedUpdatePatch2
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -109,7 +108,7 @@ namespace CommonPlugin.Patches
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldfld, Field(typeof(LocalCurrentRoomEffects), "_hub")),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Ceq),
                 new(OpCodes.Ldc_I4_0),
                 new(OpCodes.Ceq),
@@ -180,14 +179,14 @@ namespace CommonPlugin.Patches
                 new(OpCodes.Callvirt, PropertyGetter(typeof(AttackerDamageHandler), nameof(AttackerDamageHandler.Attacker))),
                 new(OpCodes.Ldfld, Field(typeof(Footprint), nameof(Footprint.Hub))),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Ceq),
                 new(OpCodes.Brtrue_S, friendlyfireLable),
 
                 // if (ply.playerId == EventHandlers.Scp035id)
                 new(OpCodes.Ldarg_1),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Ceq),
                 new(OpCodes.Brfalse_S, continueLable),
                 

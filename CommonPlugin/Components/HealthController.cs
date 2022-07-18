@@ -50,12 +50,7 @@ namespace CommonPlugin.Components
             get => this.healthStat.MaxValue;
         }
 
-        private void Awake()
-        {
-
-        }
-
-        public void Start()
+        public void Reset()
         {
             this.healthStat = ReferenceHub.GetHub(this.gameObject).playerStats.GetModule<HealthStat>();
 
@@ -63,36 +58,6 @@ namespace CommonPlugin.Components
             this.MaxHealth = this.MaxHealth2;
             this.Heal = 0;
             this.Heal2 = 0;
-        }
-
-        private void OnEnable()
-        {
-
-        }
-
-        private void FixedUpdate()
-        {
-
-        }
-
-        private void Update()
-        {
-
-        }
-
-        private void LateUpdate()
-        {
-
-        }
-
-        private void OnDisable()
-        {
-
-        }
-
-        private void OnDestroy()
-        {
-
         }
     }
 }

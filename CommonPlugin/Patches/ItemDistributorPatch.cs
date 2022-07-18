@@ -8,7 +8,7 @@ using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(ItemDistributor), "SpawnPickup", typeof(ItemPickupBase))]
+    [HarmonyPatch(typeof(ItemDistributor), nameof(ItemDistributor.SpawnPickup), typeof(ItemPickupBase))]
     internal static class SpawnPickupPatch
     {
         private static void Prefix(ItemDistributor __instance, ref ItemPickupBase ipb)

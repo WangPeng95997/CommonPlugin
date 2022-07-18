@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(Ragdoll), "ServerSpawnRagdoll", typeof(ReferenceHub), typeof(DamageHandlerBase))]
+    [HarmonyPatch(typeof(Ragdoll), nameof(Ragdoll.ServerSpawnRagdoll), typeof(ReferenceHub), typeof(DamageHandlerBase))]
     internal static class RagdollPatch
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub hub, DamageHandlerBase handler)

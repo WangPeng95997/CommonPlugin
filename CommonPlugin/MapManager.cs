@@ -12,15 +12,15 @@ namespace CommonPlugin
     public static class MapManager
     {
         public static List<Smod2Room> Rooms { get; private set; }
-        public static Smod2Room MircohidRoom { get; private set; }
-        public static Smod2Room Scp330Room { get; private set; }
         public static Smod2Room Scp049Room { get; private set; }
         public static Smod2Room Scp079Room { get; private set; }
         public static Smod2Room Scp096Room { get; private set; }
         public static Smod2Room Scp106Room { get; private set; }
         public static Smod2Room Scp173Room { get; private set; }
+        public static Smod2Room Scp330Room { get; private set; }
         public static Smod2Room Scp703Room { get; private set; }
         public static Smod2Room Scp939Room { get; private set; }
+        public static Smod2Room MircohidRoom { get; private set; }
         public static Smod2Room ServersRoom { get; private set; }
 
         static MapManager() => Rooms = new List<Smod2Room>();
@@ -127,12 +127,8 @@ namespace CommonPlugin
         public Vector3 Position { get; set; }
         public Vector Position2 { get; set; }
         public Transform Transform { get; set; }
-        
 
-        public Smod2Room(string roomname)
-        {
-            this.Roomname = roomname;
-        }
+        public Smod2Room(string roomname) => this.Roomname = roomname;
 
         public Smod2Room(string roomname, Transform transform, Vector3 position)
         {

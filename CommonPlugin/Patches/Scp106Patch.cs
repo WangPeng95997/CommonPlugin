@@ -22,7 +22,7 @@ namespace CommonPlugin.Patches
             {
                 new(OpCodes.Ldloc_0),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Ldsfld, Field(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
+                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Beq_S, returnLabel),
             });
 

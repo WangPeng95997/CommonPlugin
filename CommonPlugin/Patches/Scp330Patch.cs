@@ -26,7 +26,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CandyBlue), "ServerApplyEffects", typeof(ReferenceHub))]
+    [HarmonyPatch(typeof(CandyBlue), nameof(CandyBlue.ServerApplyEffects), typeof(ReferenceHub))]
     internal static class CandyBluePatch
     {
         private const float candyBlueAhp = 40.0f;
@@ -47,7 +47,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CandyGreen), "ServerApplyEffects", typeof(ReferenceHub))]
+    [HarmonyPatch(typeof(CandyGreen), nameof(CandyGreen.ServerApplyEffects), typeof(ReferenceHub))]
     internal static class CandyGreenPatch
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub hub)
@@ -62,7 +62,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CandyPurple), "ServerApplyEffects", typeof(ReferenceHub))]
+    [HarmonyPatch(typeof(CandyPurple), nameof(CandyPurple.ServerApplyEffects), typeof(ReferenceHub))]
     internal static class CandyPurplePatch
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub hub)
@@ -80,7 +80,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CandyRainbow), "ServerApplyEffects", typeof(ReferenceHub))]
+    [HarmonyPatch(typeof(CandyRainbow), nameof(CandyRainbow.ServerApplyEffects), typeof(ReferenceHub))]
     internal static class CandyRainbowPatch
     {
         private const float candyRainbowAdd = 20.0f;
@@ -106,7 +106,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CandyRed), "ServerApplyEffects", typeof(ReferenceHub))]
+    [HarmonyPatch(typeof(CandyRed), nameof(CandyRed.ServerApplyEffects), typeof(ReferenceHub))]
     internal static class CandyRedPatch
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub hub)
@@ -120,7 +120,7 @@ namespace CommonPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(CandyYellow), "ServerApplyEffects", typeof(ReferenceHub))]
+    [HarmonyPatch(typeof(CandyYellow), nameof(CandyYellow.ServerApplyEffects), typeof(ReferenceHub))]
     internal static class CandyYellowPatch
     {
         private static bool Prefix(Ragdoll __instance, ReferenceHub hub)
