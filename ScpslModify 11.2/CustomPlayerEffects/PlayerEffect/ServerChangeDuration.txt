@@ -1,0 +1,9 @@
+public void ServerChangeDuration(float newDuration, bool addNew = false)
+{
+	if (addNew)
+	{
+		this.Duration += newDuration;
+		return;
+	}
+	this.Duration = newDuration;
+}

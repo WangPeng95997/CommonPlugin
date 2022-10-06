@@ -56,7 +56,8 @@ namespace CommonPlugin.Patches
 
             Label returnLable = generator.DefineLabel();
 
-            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ldloc_S);
+            int index = newInstructions.FindIndex(i => i.opcode == OpCodes.Call &&
+            (MethodInfo)i.operand == Method(typeof(ReferenceHub), nameof(ReferenceHub.TryGetHubNetID))) + 2;
 
             newInstructions.InsertRange(index, new CodeInstruction[]
             {
@@ -77,15 +78,10 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
 
-        private static bool AllowDamage(ReferenceHub attacker, ReferenceHub player)
-        {
-            if (attacker.playerId != EventHandlers.Scp035id && attacker.playerId == player.playerId)
-                return false;
-
-            return true;
-        }
+        private static bool AllowDamage(ReferenceHub attacker, ReferenceHub player) =>
+            attacker == null || player == null || attacker.playerId == EventHandlers.Scp035id || attacker.playerId != player.playerId;
     }
-
+    
     [HarmonyPatch(typeof(LocalCurrentRoomEffects), "FixedUpdate")]
     internal static class FixedUpdatePatch2
     {
@@ -120,36 +116,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-
-    /*
-    [HarmonyPatch(typeof(FlashbangGrenade), "ProcessPlayer", typeof(ReferenceHub))]
-    internal static class ProcessPlayerPatch
-    {
-        private static bool Prefix(FlashbangGrenade __instance, ReferenceHub hub)
-        {
-            ReferenceHub owner = ReferenceHub.GetHub(__instance.gameObject);
-
-            if (owner.playerId == EventHandlers.Scp035id)
-            {
-                switch(hub.characterClassManager.NetworkCurClass)
-                {
-                    case RoleType.Scp049:
-                    case RoleType.Scp0492:
-                    case RoleType.Scp079:
-                    case RoleType.Scp096:
-                    case RoleType.Scp106:
-                    case RoleType.Scp173:
-                    case RoleType.Scp93953:
-                    case RoleType.Scp93989:
-                        return false;
-                }
-            }
-
-            return true;
-        }
-    }
-    */
-
+    
     [HarmonyPatch(typeof(AttackerDamageHandler), "ProcessDamage", typeof(ReferenceHub))]
     internal static class ProcessDamagePatch
     {

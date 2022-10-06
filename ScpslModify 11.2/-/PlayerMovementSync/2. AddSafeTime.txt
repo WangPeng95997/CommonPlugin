@@ -1,2 +1,5 @@
-this._safeTime = Mathf.Min(this._safeTime + newTime, 2f);
-this.InSafeTime = true;
+public void AddSafeTime(float newTime, bool max = false)
+{
+	this._safeTime = Mathf.Min(this._safeTime + newTime, 2f);
+	this.InSafeTime = true;
+}

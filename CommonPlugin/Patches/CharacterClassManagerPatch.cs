@@ -7,40 +7,6 @@ using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {
-    [HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.IsAnyScp))]
-    internal static class IsAnyScpPatch
-    {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
-
-            Label continueLable = generator.DefineLabel();
-
-            int index = 0;
-
-            newInstructions.InsertRange(index, new CodeInstruction[]
-            {
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, Field(typeof(CharacterClassManager), "_hub")),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
-                new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
-                new(OpCodes.Ceq),
-                new(OpCodes.Brfalse_S, continueLable),
-                new(OpCodes.Ldc_I4_1),
-                new(OpCodes.Ret),
-            });
-
-            index = newInstructions.FindIndex(i => i.opcode == OpCodes.Ret) + 1;
-
-            newInstructions[index].WithLabels(continueLable);
-
-            for (int z = 0; z < newInstructions.Count; z++)
-                yield return newInstructions[z];
-
-            ListPool<CodeInstruction>.Shared.Return(newInstructions);
-        }
-    }
-
     [HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.RpcPlaceBlood), typeof(Vector3), typeof(int), typeof(float))]
     internal static class PlaceBloodPatch
     {

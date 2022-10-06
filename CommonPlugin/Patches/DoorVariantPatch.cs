@@ -73,7 +73,7 @@ namespace CommonPlugin.Patches
                 return false;
 
             string doorName = doorNametagExtension.GetName;
-            if (doorName == "HID" || doorName == "INTERCOM")
+            if (hub.inventory.CurInstance != null && (doorName == "HID" || doorName == "INTERCOM"))
             {
                 switch (hub.inventory.CurInstance.ItemTypeId)
                 {

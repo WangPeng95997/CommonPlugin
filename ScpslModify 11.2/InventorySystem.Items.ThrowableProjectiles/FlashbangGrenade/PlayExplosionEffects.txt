@@ -8,7 +8,7 @@ protected override void PlayExplosionEffects()
 	float num = time * time;
 	foreach (KeyValuePair<GameObject, ReferenceHub> keyValuePair in ReferenceHub.GetAllHubs())
 	{
-		if (!(keyValuePair.Value == null) && (base.transform.position - keyValuePair.Value.transform.position).sqrMagnitude <= num && !(keyValuePair.Value == this.PreviousOwner.Hub) && HitboxIdentity.CheckFriendlyFire(this.PreviousOwner.Hub, keyValuePair.Value, false))
+		if (!(keyValuePair.Value == null) && (base.transform.position - keyValuePair.Value.transform.position).sqrMagnitude <= num)
 		{
 			this.ProcessPlayer(keyValuePair.Value);
 		}

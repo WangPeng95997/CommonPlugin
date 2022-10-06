@@ -1,0 +1,22 @@
+private void ProcessPlayer(ReferenceHub hub)
+{
+	Vector3 vector = base.transform.position - hub.PlayerCameraReference.position;
+	float num = vector.magnitude;
+	float num2 = this._deafenDurationOverDistance.Evaluate(num);
+	if (num2 > this._minimalEffectDuration)
+	{
+		hub.playerEffectsController.EnableEffect<Deafened>(num2, true);
+	}
+	if (!Physics.Linecast(base.transform.position, hub.PlayerCameraReference.position, this._blindingMask))
+	{
+		if (hub.transform.position.y > 900f)
+		{
+			num /= this._surfaceZoneDistanceIntensifier;
+		}
+		if (this._blindingOverDistance.Evaluate(num) * this._blindingOverDot.Evaluate(Vector3.Dot(hub.PlayerCameraReference.forward, vector.normalized)) > this._minimalEffectDuration)
+		{
+			hub.playerEffectsController.EnableEffect<Flashed>(5f, true);
+			hub.playerEffectsController.EnableEffect<Blinded>(5f + this._additionalBlurDuration, true);
+		}
+	}
+}

@@ -11,10 +11,10 @@ namespace CommonPlugin
 		id = "l4kkS41.CommonPlugin",
 		configPrefix = "CM",
 		langFile = "CommonPlugin",
-		version = "B",
+		version = "A",
 		SmodMajor = 3,
 		SmodMinor = 10,
-		SmodRevision = 2
+		SmodRevision = 6
 		)]
 	public class CommonPlugin : Plugin
 	{
