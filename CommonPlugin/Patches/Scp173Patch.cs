@@ -20,7 +20,7 @@ namespace CommonPlugin.Patches
 
             newInstructions.InsertRange(index, new CodeInstruction[]
             {
-                new(OpCodes.Ldloc_1),
+                new(OpCodes.Ldarg_1),
                 new(OpCodes.Callvirt, PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.playerId))),
                 new(OpCodes.Call, PropertyGetter(typeof(EventHandlers), nameof(EventHandlers.Scp035id))),
                 new(OpCodes.Ceq),
@@ -35,7 +35,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-
+    
     [HarmonyPatch(typeof(Scp173), "UpdateObservers")]
     internal static class UpdateObserversPatch
     {

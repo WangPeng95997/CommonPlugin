@@ -1216,23 +1216,23 @@ namespace CommonPlugin
 				switch (scp079Level)
 				{
 					case Scp079Level.Level_1:
-						PluginEx.FlickerLights(12, 24);
+						PluginEx.FlickerLights(14, 24);
 						break;
 
 					case Scp079Level.Level_2:
-						PluginEx.FlickerLights(16, 30);
+						PluginEx.FlickerLights(18, 30);
 						break;
 
 					case Scp079Level.Level_3:
-						PluginEx.FlickerLights(20, 36);
+						PluginEx.FlickerLights(22, 36);
 						break;
 
 					case Scp079Level.Level_4:
-						PluginEx.FlickerLights(24, 42);
+						PluginEx.FlickerLights(26, 42);
 						break;
 
 					case Scp079Level.Level_5:
-						PluginEx.FlickerLights(28, 48);
+						PluginEx.FlickerLights(30, 48);
 						break;
 				}
 
