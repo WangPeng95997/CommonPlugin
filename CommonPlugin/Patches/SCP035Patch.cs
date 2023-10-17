@@ -46,7 +46,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    
+
     [HarmonyPatch(typeof(ExplosionGrenade), "ExplodeDestructible")]
     internal static class ExplodeDestructiblePatch
     {
@@ -81,7 +81,7 @@ namespace CommonPlugin.Patches
         private static bool AllowDamage(ReferenceHub attacker, ReferenceHub player) =>
             attacker == null || player == null || attacker.playerId == EventHandlers.Scp035id || attacker.playerId != player.playerId;
     }
-    
+
     [HarmonyPatch(typeof(LocalCurrentRoomEffects), "FixedUpdate")]
     internal static class FixedUpdatePatch2
     {
@@ -116,7 +116,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    
+
     [HarmonyPatch(typeof(AttackerDamageHandler), "ProcessDamage", typeof(ReferenceHub))]
     internal static class ProcessDamagePatch
     {
@@ -136,7 +136,7 @@ namespace CommonPlugin.Patches
                 new(OpCodes.Callvirt, PropertyGetter(typeof(AttackerDamageHandler), nameof(AttackerDamageHandler.Damage))),
                 new(OpCodes.Stloc, Damage.LocalIndex),
             });
-            
+
             index = newInstructions.Count - 4;
 
             newInstructions.InsertRange(index, new CodeInstruction[]
@@ -162,11 +162,11 @@ namespace CommonPlugin.Patches
                 new(OpCodes.Ldloc, Damage.LocalIndex),
                 new(OpCodes.Callvirt, PropertySetter(typeof(AttackerDamageHandler), nameof(AttackerDamageHandler.Damage))),
             });
-            
+
             index = newInstructions.Count - 4;
 
             newInstructions[index].WithLabels(continueLable);
-            
+
             for (int z = 0; z < newInstructions.Count; z++)
                 yield return newInstructions[z];
 

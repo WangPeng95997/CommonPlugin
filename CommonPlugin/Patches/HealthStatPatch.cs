@@ -7,20 +7,20 @@ namespace CommonPlugin.Patches
     [HarmonyPatch(typeof(HealthStat), nameof(HealthStat.MaxValue), MethodType.Getter)]
     internal static class MaxValuePatch
     {
-        private const float ClassD = EventHandlers.ClassdMaxHP;
-        private const float Scientist = EventHandlers.ScientistMaxHP;
-        private const float Mtf = EventHandlers.MtfMaxHP;
-        private const float MtfCaptain = EventHandlers.MtfCaptainMaxHP;
-        private const float Chaos = EventHandlers.ChaosMaxHP;
-        private const float ChaosMarauder = EventHandlers.ChaosMarauderMaxHP;
-        private const float Scp049 = EventHandlers.Scp049MaxHP;
-        private const float Scp0492 = EventHandlers.Scp0492MaxHP;
-        private const float Scp079 = EventHandlers.Scp079MaxHP;
-        private const float Scp096 = EventHandlers.Scp096MaxHP;
-        private const float Scp106 = EventHandlers.Scp106MaxHP;
-        private const float Scp173 = EventHandlers.Scp173MaxHP;
-        private const float Scp682 = EventHandlers.Scp682MaxHP;
-        private const float Scp939 = EventHandlers.Scp939MaxHP;
+        const float ClassD = EventHandlers.ClassdMaxHP;
+        const float Scientist = EventHandlers.ScientistMaxHP;
+        const float Mtf = EventHandlers.MtfMaxHP;
+        const float MtfCaptain = EventHandlers.MtfCaptainMaxHP;
+        const float Chaos = EventHandlers.ChaosMaxHP;
+        const float ChaosMarauder = EventHandlers.ChaosMarauderMaxHP;
+        const float Scp049 = EventHandlers.Scp049MaxHP;
+        const float Scp0492 = EventHandlers.Scp0492MaxHP;
+        const float Scp079 = EventHandlers.Scp079MaxHP;
+        const float Scp096 = EventHandlers.Scp096MaxHP;
+        const float Scp106 = EventHandlers.Scp106MaxHP;
+        const float Scp173 = EventHandlers.Scp173MaxHP;
+        const float Scp682 = EventHandlers.Scp682MaxHP;
+        const float Scp939 = EventHandlers.Scp939MaxHP;
 
         private static bool Prefix(HealthStat __instance, ref float __result)
         {

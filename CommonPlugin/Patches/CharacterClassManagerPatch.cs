@@ -3,7 +3,6 @@ using System.Reflection.Emit;
 using UnityEngine;
 using HarmonyLib;
 using NorthwoodLib.Pools;
-using static HarmonyLib.AccessTools;
 
 namespace CommonPlugin.Patches
 {

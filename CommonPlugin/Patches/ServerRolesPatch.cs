@@ -50,11 +50,11 @@ namespace CommonPlugin.Patches
                     break;
 
                 case WaitingPosition.Scp330Position:
-                    startPostion = GetWarheadPostion();
+                    startPostion = MapManager.Scp330Room.Position;
                     break;
 
                 case WaitingPosition.WarheadPostion:
-                    startPostion = MapManager.Scp330Room.Position;
+                    startPostion = GetWarheadPostion();
                     break;
             }
         }

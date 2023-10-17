@@ -10,7 +10,7 @@ using CommonPlugin.Components;
 
 namespace CommonPlugin.Extensions
 {
-    public static class MethodExtensions
+    public static class Method
     {
         private static FieldInfo fieldInfo = typeof(AhpStat).GetField("_activeProcesses", BindingFlags.Instance | BindingFlags.NonPublic);
 

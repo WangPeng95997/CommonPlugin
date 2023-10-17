@@ -128,6 +128,8 @@ namespace CommonPlugin
         public Vector Position2 { get; set; }
         public Transform Transform { get; set; }
 
+        public Smod2Room() { }
+
         public Smod2Room(string roomname) => this.Roomname = roomname;
 
         public Smod2Room(string roomname, Transform transform, Vector3 position)

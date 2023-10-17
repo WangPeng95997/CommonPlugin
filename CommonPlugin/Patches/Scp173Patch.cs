@@ -35,7 +35,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    
+
     [HarmonyPatch(typeof(Scp173), "UpdateObservers")]
     internal static class UpdateObserversPatch
     {

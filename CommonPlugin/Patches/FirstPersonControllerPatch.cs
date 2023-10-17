@@ -29,7 +29,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    
+
     [HarmonyPatch(typeof(FirstPersonController), nameof(FirstPersonController.ResetStamina))]
     internal static class ResetStaminaPatch
     {
@@ -53,7 +53,7 @@ namespace CommonPlugin.Patches
             ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
     }
-    
+
     [HarmonyPatch(typeof(FirstPersonController), "UpdateStamina")]
     internal static class UpdatePatch
     {
